@@ -26,6 +26,7 @@ class InventoryManager {
         this.sales = [];
         this.purchases = [];
         this.transportExpenses = [];
+        this.generalExpenses = [];
         this.currentEditId = null;
         this.initialized = false;
     }
@@ -46,6 +47,10 @@ class InventoryManager {
             // Load transport expenses from Firebase
             const transportSnapshot = await db.collection('transportExpenses').orderBy('date', 'desc').get();
             this.transportExpenses = transportSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            // Load general expenses from Firebase
+            const generalExpensesSnapshot = await db.collection('generalExpenses').orderBy('date', 'desc').get();
+            this.generalExpenses = generalExpensesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
             this.initialized = true;
             return true;
@@ -204,6 +209,39 @@ class InventoryManager {
         }
     }
 
+    // General Expenses CRUD operations
+    async addGeneralExpense(expenseData) {
+        try {
+            const expense = {
+                id: Date.now(),
+                date: expenseData.date,
+                amount: parseFloat(expenseData.amount),
+                note: expenseData.note,
+                createdAt: new Date().toISOString()
+            };
+
+            // Save to Firebase
+            await db.collection('generalExpenses').doc(expense.id.toString()).set(expense);
+            this.generalExpenses.unshift(expense);
+
+            return { success: true, expense };
+        } catch (error) {
+            console.error('Error adding general expense:', error);
+            return { success: false, message: 'Error adding general expense. Please try again.' };
+        }
+    }
+
+    async deleteGeneralExpense(id) {
+        try {
+            await db.collection('generalExpenses').doc(id.toString()).delete();
+            this.generalExpenses = this.generalExpenses.filter(e => e.id != id);
+            return { success: true };
+        } catch (error) {
+            console.error('Error deleting general expense:', error);
+            return { success: false, message: 'Error deleting expense. Please try again.' };
+        }
+    }
+
 
 
     // Analytics
@@ -255,6 +293,18 @@ class InventoryManager {
             const revenue = sellingPrice * product.quantity;
             return sum + revenue;
         }, 0);
+    }
+
+    getTotalGeneralExpenses() {
+        return this.generalExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+    }
+
+    getMonthlyGeneralExpenses() {
+        const now = new Date();
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+        return this.generalExpenses
+            .filter(expense => new Date(expense.date) >= firstDay)
+            .reduce((sum, expense) => sum + expense.amount, 0);
     }
 
     getLowStockProducts(threshold = 10) {
@@ -420,6 +470,38 @@ function renderTransportExpenses() {
     }).join('');
 }
 
+function renderGeneralExpenses() {
+    const generalExpensesList = document.getElementById('generalExpensesList');
+    
+    // Clear the container first
+    generalExpensesList.innerHTML = '';
+    
+    // Get general expenses from Firebase data
+    const recentExpenses = inventory.generalExpenses.slice(0, 10);
+    
+    if (recentExpenses.length === 0) {
+        generalExpensesList.innerHTML = '<p class="text-center">No general expenses recorded yet</p>';
+        return;
+    }
+
+    generalExpensesList.innerHTML = recentExpenses.map(expense => {
+        const expenseDate = new Date(expense.date).toLocaleDateString('en-IN');
+        
+        return `
+            <div class="transaction-item fade-in">
+                <div class="transaction-header">
+                    <span class="transaction-product">💸 ${expense.note}</span>
+                    <span class="transaction-amount">₹${expense.amount.toLocaleString('en-IN')}</span>
+                </div>
+                <div class="transaction-details">
+                    Date: ${expenseDate}
+                    <button onclick="deleteGeneralExpense(${expense.id})" class="btn-delete" style="margin-left: 1rem; padding: 0.25rem 0.75rem; background: #ff4444; color: white; border: none; border-radius: 0.25rem; cursor: pointer; font-size: 0.85rem;">Delete</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
 
 
 function updateReports() {
@@ -436,6 +518,10 @@ function updateReports() {
         inventory.getTotalProducts().toLocaleString('en-IN');
     document.getElementById('estimatedRevenue').textContent = 
         '₹' + Math.round(inventory.getEstimatedRevenue()).toLocaleString('en-IN');
+    document.getElementById('totalGeneralExpenses').textContent = 
+        '₹' + inventory.getTotalGeneralExpenses().toLocaleString('en-IN');
+    document.getElementById('monthlyGeneralExpenses').textContent = 
+        '₹' + inventory.getMonthlyGeneralExpenses().toLocaleString('en-IN');
 }
 
 // ===================================
@@ -456,6 +542,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             populateProductDropdowns();
             renderRecentSales();
             renderTransportExpenses();
+            renderGeneralExpenses();
             updateReports();
             
             // Hide loading overlay
@@ -794,6 +881,64 @@ transportExpenseForm.addEventListener('submit', async (e) => {
     }
 });
 
+// General Expenses Form Handler
+const generalExpenseForm = document.getElementById('generalExpenseForm');
+
+// Set today's date as default for general expense date
+document.getElementById('generalExpenseDate').valueAsDate = new Date();
+
+generalExpenseForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    showNotification('Adding general expense...', 'info');
+    
+    try {
+        const expenseData = {
+            date: document.getElementById('generalExpenseDate').value,
+            amount: parseFloat(document.getElementById('generalExpenseAmount').value),
+            note: document.getElementById('generalExpenseNote').value.trim()
+        };
+        
+        const result = await inventory.addGeneralExpense(expenseData);
+        
+        if (result.success) {
+            showNotification('General expense added successfully!', 'success');
+            generalExpenseForm.reset();
+            document.getElementById('generalExpenseDate').valueAsDate = new Date();
+            renderGeneralExpenses();
+            updateReports();
+        } else {
+            showNotification(result.message, 'error');
+        }
+    } catch (error) {
+        showNotification('Error adding general expense. Please try again.', 'error');
+        console.error('Error adding general expense:', error);
+    }
+});
+
+// Delete General Expense Function
+async function deleteGeneralExpense(id) {
+    if (!confirm('Are you sure you want to delete this expense?')) {
+        return;
+    }
+    
+    showNotification('Deleting expense...', 'info');
+    
+    try {
+        const result = await inventory.deleteGeneralExpense(id);
+        
+        if (result.success) {
+            showNotification('Expense deleted successfully!', 'success');
+            renderGeneralExpenses();
+            updateReports();
+        } else {
+            showNotification(result.message, 'error');
+        }
+    } catch (error) {
+        showNotification('Error deleting expense. Please try again.', 'error');
+        console.error('Error deleting expense:', error);
+    }
+}
 
 
 // ===================================

@@ -170,6 +170,35 @@
                         <!-- Recent transport expenses will appear here -->
                     </div>
                 </div>
+
+                <!-- General Expenses -->
+                <div class="recent-transactions" style="margin-top: 2rem;">
+                    <h3>General Expenses</h3>
+                    <p style="color: #666; font-size: 0.9rem; margin-bottom: 1rem;">Track miscellaneous business expenses (not related to product pricing)</p>
+                    <form id="generalExpenseForm" class="form-grid">
+                        <div class="form-group">
+                            <label for="generalExpenseDate">Date</label>
+                            <input type="date" id="generalExpenseDate" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="generalExpenseAmount">Amount (₹)</label>
+                            <input type="number" id="generalExpenseAmount" step="0.01" min="0" required>
+                        </div>
+
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label for="generalExpenseNote">Note</label>
+                            <textarea id="generalExpenseNote" rows="3" placeholder="Enter expense details..." required></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Add General Expense</button>
+                    </form>
+
+                    <!-- Recent General Expenses List -->
+                    <div id="generalExpensesList" class="transaction-list" style="margin-top: 1rem;">
+                        <!-- Recent general expenses will appear here -->
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -224,6 +253,20 @@
                     <div class="stat-content">
                         <h3>Estimated Revenue</h3>
                         <p class="stat-value" id="estimatedRevenue">₹0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💸</div>
+                    <div class="stat-content">
+                        <h3>General Expenses</h3>
+                        <p class="stat-value" id="totalGeneralExpenses">₹0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📉</div>
+                    <div class="stat-content">
+                        <h3>Monthly Expenses</h3>
+                        <p class="stat-value" id="monthlyGeneralExpenses">₹0</p>
                     </div>
                 </div>
             </div>
