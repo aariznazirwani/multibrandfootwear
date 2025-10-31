@@ -10,6 +10,10 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    
+    <!-- Chart.js for 3D Charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-3d@0.3.0/dist/chartjs-plugin-3d.min.js"></script>
 </head>
 <body>
     <!-- Loading Overlay -->
@@ -226,7 +230,151 @@
         </div>
     </section>
 
+    <!-- 3D Charts Section -->
+    <section class="section" id="charts3d">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">📊 3D Visual Analytics</h2>
+                <p class="section-subtitle">Interactive 3D visualizations of your business data</p>
+            </div>
 
+            <div class="charts-3d-grid">
+                <!-- Sales Trend 3D Chart -->
+                <div class="chart-3d-card">
+                    <div class="chart-3d-header">
+                        <h3>💰 Sales Trend (Last 7 Days)</h3>
+                        <div class="chart-3d-badge">Real-time</div>
+                    </div>
+                    <div class="chart-3d-container">
+                        <canvas id="salesTrend3D"></canvas>
+                    </div>
+                    <div class="chart-3d-footer">
+                        <div class="chart-stat">
+                            <span class="chart-stat-label">Avg Daily</span>
+                            <span class="chart-stat-value" id="avgDailySales">₹0</span>
+                        </div>
+                        <div class="chart-stat">
+                            <span class="chart-stat-label">Peak Day</span>
+                            <span class="chart-stat-value" id="peakDay">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category Distribution 3D Chart -->
+                <div class="chart-3d-card">
+                    <div class="chart-3d-header">
+                        <h3>👟 Category Distribution</h3>
+                        <div class="chart-3d-badge">By Stock</div>
+                    </div>
+                    <div class="chart-3d-container">
+                        <canvas id="categoryDistribution3D"></canvas>
+                    </div>
+                    <div class="chart-3d-footer">
+                        <div class="chart-stat">
+                            <span class="chart-stat-label">Men's Stock</span>
+                            <span class="chart-stat-value" id="menStock">0</span>
+                        </div>
+                        <div class="chart-stat">
+                            <span class="chart-stat-label">Women's Stock</span>
+                            <span class="chart-stat-value" id="womenStock">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Products 3D Chart -->
+                <div class="chart-3d-card">
+                    <div class="chart-3d-header">
+                        <h3>🏆 Top Selling Products</h3>
+                        <div class="chart-3d-badge">By Revenue</div>
+                    </div>
+                    <div class="chart-3d-container">
+                        <canvas id="topProducts3D"></canvas>
+                    </div>
+                    <div class="chart-3d-footer">
+                        <div class="chart-stat">
+                            <span class="chart-stat-label">Best Seller</span>
+                            <span class="chart-stat-value" id="bestSeller">-</span>
+                        </div>
+                        <div class="chart-stat">
+                            <span class="chart-stat-label">Revenue</span>
+                            <span class="chart-stat-value" id="bestSellerRevenue">₹0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Mode 3D Chart -->
+                <div class="chart-3d-card">
+                    <div class="chart-3d-header">
+                        <h3>💳 Payment Methods</h3>
+                        <div class="chart-3d-badge">Distribution</div>
+                    </div>
+                    <div class="chart-3d-container">
+                        <canvas id="paymentMode3D"></canvas>
+                    </div>
+                    <div class="chart-3d-footer">
+                        <div class="chart-stat">
+                            <span class="chart-stat-label">Cash</span>
+                            <span class="chart-stat-value" id="cashPayments">₹0</span>
+                        </div>
+                        <div class="chart-stat">
+                            <span class="chart-stat-label">UPI</span>
+                            <span class="chart-stat-value" id="upiPayments">₹0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Monthly Revenue 3D Chart -->
+                <div class="chart-3d-card chart-3d-card-wide">
+                    <div class="chart-3d-header">
+                        <h3>📈 Monthly Revenue Overview</h3>
+                        <div class="chart-3d-badge">Last 6 Months</div>
+                    </div>
+                    <div class="chart-3d-container">
+                        <canvas id="monthlyRevenue3D"></canvas>
+                    </div>
+                    <div class="chart-3d-footer">
+                        <div class="chart-stat">
+                            <span class="chart-stat-label">Current Month</span>
+                            <span class="chart-stat-value" id="currentMonthRev">₹0</span>
+                        </div>
+                        <div class="chart-stat">
+                            <span class="chart-stat-label">Last Month</span>
+                            <span class="chart-stat-value" id="lastMonthRev">₹0</span>
+                        </div>
+                        <div class="chart-stat">
+                            <span class="chart-stat-label">Growth</span>
+                            <span class="chart-stat-value" id="growthRate">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stock Status 3D Chart -->
+                <div class="chart-3d-card chart-3d-card-wide">
+                    <div class="chart-3d-header">
+                        <h3>📦 Stock Status Overview</h3>
+                        <div class="chart-3d-badge">Live</div>
+                    </div>
+                    <div class="chart-3d-container">
+                        <canvas id="stockStatus3D"></canvas>
+                    </div>
+                    <div class="chart-3d-footer">
+                        <div class="chart-stat">
+                            <span class="chart-stat-label">In Stock</span>
+                            <span class="chart-stat-value" id="inStockCount">0</span>
+                        </div>
+                        <div class="chart-stat">
+                            <span class="chart-stat-label">Low Stock</span>
+                            <span class="chart-stat-value" id="lowStockCount">0</span>
+                        </div>
+                        <div class="chart-stat">
+                            <span class="chart-stat-label">Out of Stock</span>
+                            <span class="chart-stat-value" id="outOfStockCount">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- Add/Edit Product Modal -->
     <div class="modal" id="productModal">

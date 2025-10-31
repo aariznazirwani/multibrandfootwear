@@ -1037,3 +1037,628 @@ console.log('🔥 Firebase initialized successfully');
 
 // Make inventory accessible in console for debugging
 window.inventory = inventory;
+
+// ===================================
+// 3D CHARTS INITIALIZATION
+// ===================================
+
+let charts3D = {
+    salesTrend: null,
+    categoryDistribution: null,
+    topProducts: null,
+    paymentMode: null,
+    monthlyRevenue: null,
+    stockStatus: null
+};
+
+function initialize3DCharts() {
+    // Configure Chart.js defaults for 3D effect
+    Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    Chart.defaults.color = getComputedStyle(document.documentElement).getPropertyValue('--text-primary');
+    
+    initSalesTrend3D();
+    initCategoryDistribution3D();
+    initTopProducts3D();
+    initPaymentMode3D();
+    initMonthlyRevenue3D();
+    initStockStatus3D();
+    
+    // Update charts with actual data
+    update3DChartsData();
+}
+
+function initSalesTrend3D() {
+    const ctx = document.getElementById('salesTrend3D');
+    if (!ctx) return;
+    
+    charts3D.salesTrend = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Daily Sales (₹)',
+                data: [],
+                backgroundColor: createGradient(ctx, '#004D4D', '#e6a400'),
+                borderColor: '#004D4D',
+                borderWidth: 2,
+                borderRadius: 10,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 77, 77, 0.9)',
+                    titleColor: '#e6a400',
+                    bodyColor: '#ffffff',
+                    borderColor: '#e6a400',
+                    borderWidth: 2,
+                    padding: 12,
+                    displayColors: false,
+                    callbacks: {
+                        label: (context) => `₹${context.parsed.y.toLocaleString()}`
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 77, 77, 0.1)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        callback: (value) => '₹' + value.toLocaleString()
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            animation: {
+                duration: 2000,
+                easing: 'easeInOutQuart'
+            }
+        }
+    });
+}
+
+function initCategoryDistribution3D() {
+    const ctx = document.getElementById('categoryDistribution3D');
+    if (!ctx) return;
+    
+    charts3D.categoryDistribution = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Men', 'Women'],
+            datasets: [{
+                data: [0, 0],
+                backgroundColor: [
+                    'rgba(0, 77, 77, 0.8)',
+                    'rgba(230, 164, 0, 0.8)'
+                ],
+                borderColor: [
+                    '#004D4D',
+                    '#e6a400'
+                ],
+                borderWidth: 3,
+                hoverOffset: 20
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 77, 77, 0.9)',
+                    titleColor: '#e6a400',
+                    bodyColor: '#ffffff',
+                    borderColor: '#e6a400',
+                    borderWidth: 2,
+                    padding: 12,
+                    callbacks: {
+                        label: (context) => `${context.label}: ${context.parsed} units`
+                    }
+                }
+            },
+            animation: {
+                animateRotate: true,
+                animateScale: true,
+                duration: 2000
+            }
+        }
+    });
+}
+
+function initTopProducts3D() {
+    const ctx = document.getElementById('topProducts3D');
+    if (!ctx) return;
+    
+    charts3D.topProducts = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Revenue (₹)',
+                data: [],
+                backgroundColor: createGradient(ctx, '#e6a400', '#004D4D'),
+                borderColor: '#e6a400',
+                borderWidth: 2,
+                borderRadius: 10,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(230, 164, 0, 0.9)',
+                    titleColor: '#004D4D',
+                    bodyColor: '#ffffff',
+                    borderColor: '#004D4D',
+                    borderWidth: 2,
+                    padding: 12,
+                    displayColors: false,
+                    callbacks: {
+                        label: (context) => `₹${context.parsed.x.toLocaleString()}`
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(230, 164, 0, 0.1)'
+                    },
+                    ticks: {
+                        callback: (value) => '₹' + value.toLocaleString()
+                    }
+                },
+                y: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            animation: {
+                duration: 2000,
+                easing: 'easeInOutQuart'
+            }
+        }
+    });
+}
+
+function initPaymentMode3D() {
+    const ctx = document.getElementById('paymentMode3D');
+    if (!ctx) return;
+    
+    charts3D.paymentMode = new Chart(ctx, {
+        type: 'polarArea',
+        data: {
+            labels: ['Cash', 'UPI'],
+            datasets: [{
+                data: [0, 0],
+                backgroundColor: [
+                    'rgba(0, 77, 77, 0.7)',
+                    'rgba(230, 164, 0, 0.7)'
+                ],
+                borderColor: [
+                    '#004D4D',
+                    '#e6a400'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        usePointStyle: true
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 77, 77, 0.9)',
+                    titleColor: '#e6a400',
+                    bodyColor: '#ffffff',
+                    borderColor: '#e6a400',
+                    borderWidth: 2,
+                    padding: 12,
+                    callbacks: {
+                        label: (context) => `${context.label}: ₹${context.parsed.toLocaleString()}`
+                    }
+                }
+            },
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 77, 77, 0.1)'
+                    },
+                    ticks: {
+                        display: false
+                    }
+                }
+            },
+            animation: {
+                duration: 2000,
+                animateRotate: true,
+                animateScale: true
+            }
+        }
+    });
+}
+
+function initMonthlyRevenue3D() {
+    const ctx = document.getElementById('monthlyRevenue3D');
+    if (!ctx) return;
+    
+    charts3D.monthlyRevenue = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Revenue',
+                data: [],
+                backgroundColor: 'rgba(0, 77, 77, 0.1)',
+                borderColor: '#004D4D',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                pointBackgroundColor: '#e6a400',
+                pointBorderColor: '#004D4D',
+                pointBorderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 77, 77, 0.9)',
+                    titleColor: '#e6a400',
+                    bodyColor: '#ffffff',
+                    borderColor: '#e6a400',
+                    borderWidth: 2,
+                    padding: 12,
+                    displayColors: false,
+                    callbacks: {
+                        label: (context) => `₹${context.parsed.y.toLocaleString()}`
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 77, 77, 0.1)'
+                    },
+                    ticks: {
+                        callback: (value) => '₹' + (value / 1000) + 'K'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            animation: {
+                duration: 2000,
+                easing: 'easeInOutQuart'
+            }
+        }
+    });
+}
+
+function initStockStatus3D() {
+    const ctx = document.getElementById('stockStatus3D');
+    if (!ctx) return;
+    
+    charts3D.stockStatus = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['In Stock (>10)', 'Low Stock (1-10)', 'Out of Stock (0)'],
+            datasets: [{
+                label: 'Products',
+                data: [0, 0, 0],
+                backgroundColor: [
+                    'rgba(16, 185, 129, 0.8)',
+                    'rgba(230, 164, 0, 0.8)',
+                    'rgba(239, 68, 68, 0.8)'
+                ],
+                borderColor: [
+                    '#10b981',
+                    '#e6a400',
+                    '#ef4444'
+                ],
+                borderWidth: 2,
+                borderRadius: 10,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 77, 77, 0.9)',
+                    titleColor: '#e6a400',
+                    bodyColor: '#ffffff',
+                    borderColor: '#e6a400',
+                    borderWidth: 2,
+                    padding: 12,
+                    displayColors: false,
+                    callbacks: {
+                        label: (context) => `${context.parsed.y} products`
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    },
+                    grid: {
+                        color: 'rgba(0, 77, 77, 0.1)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            animation: {
+                duration: 2000,
+                easing: 'easeInOutQuart'
+            }
+        }
+    });
+}
+
+function createGradient(ctx, color1, color2) {
+    const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, color1);
+    gradient.addColorStop(1, color2);
+    return gradient;
+}
+
+function update3DChartsData() {
+    updateSalesTrendData();
+    updateCategoryDistributionData();
+    updateTopProductsData();
+    updatePaymentModeData();
+    updateMonthlyRevenueData();
+    updateStockStatusData();
+}
+
+function updateSalesTrendData() {
+    const last7Days = [];
+    const salesByDay = {};
+    
+    // Get last 7 days
+    for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
+        last7Days.push(dateStr);
+        salesByDay[dateStr] = 0;
+    }
+    
+    // Calculate sales for each day
+    inventory.sales.forEach(sale => {
+        const saleDate = sale.date;
+        if (salesByDay.hasOwnProperty(saleDate)) {
+            salesByDay[saleDate] += sale.totalPrice;
+        }
+    });
+    
+    const salesData = last7Days.map(date => salesByDay[date]);
+    const labels = last7Days.map(date => {
+        const d = new Date(date);
+        return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    });
+    
+    if (charts3D.salesTrend) {
+        charts3D.salesTrend.data.labels = labels;
+        charts3D.salesTrend.data.datasets[0].data = salesData;
+        charts3D.salesTrend.update();
+    }
+    
+    // Update stats
+    const avgDaily = salesData.reduce((a, b) => a + b, 0) / 7;
+    const maxSale = Math.max(...salesData);
+    const peakDayIndex = salesData.indexOf(maxSale);
+    
+    document.getElementById('avgDailySales').textContent = '₹' + avgDaily.toFixed(0);
+    document.getElementById('peakDay').textContent = labels[peakDayIndex] || '-';
+}
+
+function updateCategoryDistributionData() {
+    let menStock = 0;
+    let womenStock = 0;
+    
+    inventory.products.forEach(product => {
+        if (product.category === 'men') {
+            menStock += product.quantity;
+        } else if (product.category === 'women') {
+            womenStock += product.quantity;
+        }
+    });
+    
+    if (charts3D.categoryDistribution) {
+        charts3D.categoryDistribution.data.datasets[0].data = [menStock, womenStock];
+        charts3D.categoryDistribution.update();
+    }
+    
+    document.getElementById('menStock').textContent = menStock;
+    document.getElementById('womenStock').textContent = womenStock;
+}
+
+function updateTopProductsData() {
+    const productRevenue = {};
+    
+    inventory.sales.forEach(sale => {
+        const productName = sale.productName || 'Unknown';
+        if (!productRevenue[productName]) {
+            productRevenue[productName] = 0;
+        }
+        productRevenue[productName] += sale.totalPrice;
+    });
+    
+    const sortedProducts = Object.entries(productRevenue)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+    
+    const labels = sortedProducts.map(p => p[0]);
+    const data = sortedProducts.map(p => p[1]);
+    
+    if (charts3D.topProducts) {
+        charts3D.topProducts.data.labels = labels;
+        charts3D.topProducts.data.datasets[0].data = data;
+        charts3D.topProducts.update();
+    }
+    
+    if (sortedProducts.length > 0) {
+        document.getElementById('bestSeller').textContent = sortedProducts[0][0];
+        document.getElementById('bestSellerRevenue').textContent = '₹' + sortedProducts[0][1].toLocaleString();
+    }
+}
+
+function updatePaymentModeData() {
+    let cashTotal = 0;
+    let upiTotal = 0;
+    
+    inventory.sales.forEach(sale => {
+        if (sale.paymentMode === 'Cash') {
+            cashTotal += sale.totalPrice;
+        } else if (sale.paymentMode === 'UPI') {
+            upiTotal += sale.totalPrice;
+        }
+    });
+    
+    if (charts3D.paymentMode) {
+        charts3D.paymentMode.data.datasets[0].data = [cashTotal, upiTotal];
+        charts3D.paymentMode.update();
+    }
+    
+    document.getElementById('cashPayments').textContent = '₹' + cashTotal.toLocaleString();
+    document.getElementById('upiPayments').textContent = '₹' + upiTotal.toLocaleString();
+}
+
+function updateMonthlyRevenueData() {
+    const last6Months = [];
+    const revenueByMonth = {};
+    
+    // Get last 6 months
+    for (let i = 5; i >= 0; i--) {
+        const date = new Date();
+        date.setMonth(date.getMonth() - i);
+        const monthStr = date.toISOString().substring(0, 7); // YYYY-MM
+        last6Months.push(monthStr);
+        revenueByMonth[monthStr] = 0;
+    }
+    
+    // Calculate revenue for each month
+    inventory.sales.forEach(sale => {
+        const saleMonth = sale.date.substring(0, 7);
+        if (revenueByMonth.hasOwnProperty(saleMonth)) {
+            revenueByMonth[saleMonth] += sale.totalPrice;
+        }
+    });
+    
+    const revenueData = last6Months.map(month => revenueByMonth[month]);
+    const labels = last6Months.map(month => {
+        const [year, monthNum] = month.split('-');
+        const date = new Date(year, monthNum - 1);
+        return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    });
+    
+    if (charts3D.monthlyRevenue) {
+        charts3D.monthlyRevenue.data.labels = labels;
+        charts3D.monthlyRevenue.data.datasets[0].data = revenueData;
+        charts3D.monthlyRevenue.update();
+    }
+    
+    // Update stats
+    const currentMonth = revenueData[revenueData.length - 1];
+    const lastMonth = revenueData[revenueData.length - 2];
+    const growth = lastMonth > 0 ? ((currentMonth - lastMonth) / lastMonth * 100).toFixed(1) : 0;
+    
+    document.getElementById('currentMonthRev').textContent = '₹' + currentMonth.toLocaleString();
+    document.getElementById('lastMonthRev').textContent = '₹' + lastMonth.toLocaleString();
+    document.getElementById('growthRate').textContent = (growth >= 0 ? '+' : '') + growth + '%';
+}
+
+function updateStockStatusData() {
+    let inStock = 0;
+    let lowStock = 0;
+    let outOfStock = 0;
+    
+    inventory.products.forEach(product => {
+        if (product.quantity === 0) {
+            outOfStock++;
+        } else if (product.quantity <= 10) {
+            lowStock++;
+        } else {
+            inStock++;
+        }
+    });
+    
+    if (charts3D.stockStatus) {
+        charts3D.stockStatus.data.datasets[0].data = [inStock, lowStock, outOfStock];
+        charts3D.stockStatus.update();
+    }
+    
+    document.getElementById('inStockCount').textContent = inStock;
+    document.getElementById('lowStockCount').textContent = lowStock;
+    document.getElementById('outOfStockCount').textContent = outOfStock;
+}
+
+// Initialize 3D charts after data is loaded
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        initialize3DCharts();
+    }, 1500);
+});
