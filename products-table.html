@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products Table - Multi Brand Footwear</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <link rel="stylesheet" href="products-table.css">
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p>Loading products from Firebase...</p>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div>
+                    <h1>MULTI BRAND FOOTWEAR</h1>
+                    <p class="address">Main Market Chandanwari - 193122</p>
+                </div>
+                <button class="btn btn-secondary" onclick="window.location.href='index.html'">
+                    ← Back to Dashboard
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <div class="page-header">
+                <h2>All Products</h2>
+                <div class="page-info">
+                    <span id="totalProducts">Total Products: 0</span>
+                </div>
+            </div>
+
+            <!-- Products Table -->
+            <div class="table-container">
+                <table class="products-table" id="productsTable">
+                    <thead>
+                        <tr>
+                            <th>Date of Purchase</th>
+                            <th>S.No</th>
+                            <th>Product Name</th>
+                            <th>Category</th>
+                            <th>Brand</th>
+                            <th>Size</th>
+                            <th>Color</th>
+                            <th>Price (₹)</th>
+                            <th>Stock</th>
+                            <th>Image</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Table rows will be generated here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination" id="pagination">
+                <button class="btn-page" id="firstPage" onclick="goToPage(1)">First</button>
+                <button class="btn-page" id="prevPage" onclick="previousPage()">Previous</button>
+                <span class="page-info" id="pageInfo">Page 1 of 1</span>
+                <button class="btn-page" id="nextPage" onclick="nextPage()">Next</button>
+                <button class="btn-page" id="lastPage" onclick="goToLastPage()">Last</button>
+            </div>
+
+            <!-- Items per page selector -->
+            <div class="items-per-page">
+                <label for="itemsPerPage">Items per page:</label>
+                <select id="itemsPerPage" onchange="changeItemsPerPage()">
+                    <option value="10">10</option>
+                    <option value="25" selected>25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+        </div>
+    </main>
+
+    <script src="products-table.js"></script>
+</body>
+</html>

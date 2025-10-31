@@ -1,0 +1,388 @@
+/* ===================================
+   RESET & BASE STYLES
+   =================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-color: #004D4D;
+    --secondary-color: #e6a400;
+    --bg-color: #f5f5f5;
+    --text-color: #333;
+    --border-color: #ddd;
+    --white: #ffffff;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* ===================================
+   LOADING OVERLAY
+   =================================== */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 77, 77, 0.95);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.3s ease;
+}
+
+.loading-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.spinner {
+    border: 4px solid rgba(230, 164, 0, 0.3);
+    border-top: 4px solid var(--secondary-color);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-overlay p {
+    color: var(--white);
+    margin-top: 1rem;
+    font-size: 1.1rem;
+}
+
+/* ===================================
+   HEADER
+   =================================== */
+.header {
+    background: var(--primary-color);
+    color: var(--white);
+    padding: 1.5rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.header h1 {
+    color: var(--secondary-color);
+    font-size: 1.8rem;
+    margin-bottom: 0.25rem;
+}
+
+.address {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+/* ===================================
+   BUTTONS
+   =================================== */
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-secondary {
+    background: var(--secondary-color);
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.btn-secondary:hover {
+    background: #ffc107;
+    transform: translateY(-2px);
+}
+
+.btn-page {
+    padding: 0.5rem 1rem;
+    margin: 0 0.25rem;
+    border: 1px solid var(--border-color);
+    background: var(--white);
+    color: var(--text-color);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-page:hover:not(:disabled) {
+    background: var(--primary-color);
+    color: var(--white);
+    border-color: var(--primary-color);
+}
+
+.btn-page:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ===================================
+   MAIN CONTENT
+   =================================== */
+.main-content {
+    padding: 2rem 0;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.page-header h2 {
+    color: var(--primary-color);
+    font-size: 2rem;
+}
+
+.page-info {
+    color: var(--secondary-color);
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+/* ===================================
+   TABLE STYLES
+   =================================== */
+.table-container {
+    background: var(--white);
+    border-radius: 10px;
+    overflow-x: auto;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+}
+
+.products-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1000px;
+}
+
+.products-table thead {
+    background: var(--primary-color);
+    color: var(--white);
+}
+
+.products-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.products-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.products-table tbody tr:hover {
+    background-color: #f9f9f9;
+}
+
+.products-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Column specific styles */
+.products-table td:nth-child(1) {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.products-table td:nth-child(2) {
+    text-align: center;
+    font-weight: bold;
+}
+
+.products-table td:nth-child(8) {
+    font-weight: 600;
+    color: var(--secondary-color);
+}
+
+.product-image {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 5px;
+    border: 2px solid var(--border-color);
+}
+
+.no-image {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-color);
+    border-radius: 5px;
+    color: #999;
+    font-size: 0.8rem;
+}
+
+.category-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.category-men {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.category-women {
+    background: #fce4ec;
+    color: #c2185b;
+}
+
+/* ===================================
+   PAGINATION
+   =================================== */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.pagination .page-info {
+    margin: 0 1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.items-per-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+.items-per-page label {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.items-per-page select {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    background: var(--white);
+    color: var(--text-color);
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.items-per-page select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+/* ===================================
+   RESPONSIVE DESIGN
+   =================================== */
+@media (max-width: 768px) {
+    .header h1 {
+        font-size: 1.3rem;
+    }
+
+    .address {
+        font-size: 0.8rem;
+    }
+
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .page-header h2 {
+        font-size: 1.5rem;
+    }
+
+    .products-table {
+        font-size: 0.9rem;
+    }
+
+    .products-table th,
+    .products-table td {
+        padding: 0.75rem 0.5rem;
+    }
+
+    .product-image,
+    .no-image {
+        width: 50px;
+        height: 50px;
+    }
+
+    .pagination {
+        font-size: 0.9rem;
+    }
+
+    .btn-page {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* ===================================
+   EMPTY STATE
+   =================================== */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #999;
+}
+
+.empty-state h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}

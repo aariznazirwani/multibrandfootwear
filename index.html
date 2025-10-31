@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi Brand Footwear - Inventory Management</title>
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <p>Loading data from Firebase...</p>
+    </div>
+
+    <!-- Header Section -->
+    <header class="main-header">
+        <div class="header-container">
+            <h1 class="store-name">MULTI BRAND FOOTWEAR</h1>
+            <p class="store-address">Main Market Chandanwari, Near Big Rock 2nd Floor</p>
+        </div>
+    </header>
+
+    <!-- Inventory Section -->
+    <section class="section" id="inventory">
+        <div class="container">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Inventory Management</h2>
+                    <p class="section-subtitle">Manage your products efficiently</p>
+                </div>
+                <a href="products-table.html" class="btn btn-secondary" style="text-decoration: none;">
+                    📋 View Products Table
+                </a>
+            </div>
+
+            <!-- Search and Filter -->
+            <div class="search-filter-container">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search products by name, size, or category...">
+                    <span class="search-icon">🔍</span>
+                </div>
+                <div class="filter-box">
+                    <select id="categoryFilter">
+                        <option value="all">All Categories</option>
+                        <option value="men">Men</option>
+                        <option value="women">Women</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Product Grid -->
+            <div class="product-grid" id="productGrid">
+                <!-- Products will be dynamically added here -->
+            </div>
+
+            <!-- Floating Action Button -->
+            <button class="fab" id="addProductBtn" title="Add New Product">+</button>
+        </div>
+    </section>
+
+    <!-- Sales Section -->
+    <section class="section section-alt" id="sales">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Record Sales</h2>
+                <p class="section-subtitle">Track your sales transactions</p>
+            </div>
+
+            <div class="form-container">
+                <form id="salesForm" class="form">
+                    <div class="form-group">
+                        <label for="saleProduct">Select Product</label>
+                        <select id="saleProduct" required>
+                            <option value="">-- Choose a product --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="saleStock">Stock</label>
+                        <input type="number" id="saleStock" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="saleSize">Size</label>
+                        <select id="saleSize" required>
+                            <option value="">-- Select Size --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="saleColor">Color</label>
+                        <select id="saleColor" required>
+                            <option value="">-- Select Color --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="saleQuantity">Quantity Sold</label>
+                        <input type="number" id="saleQuantity" min="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="salePrice">Sale Price (per unit)</label>
+                        <input type="number" id="salePrice" step="0.01" min="0" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="paymentMode">Payment Mode</label>
+                        <select id="paymentMode" required>
+                            <option value="Cash">Cash</option>
+                            <option value="UPI">UPI</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="saleDate">Date of Sale</label>
+                        <input type="date" id="saleDate" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Record Sale</button>
+                </form>
+
+                <!-- Recent Sales -->
+                <div class="recent-transactions">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="margin: 0;">Recent Sales (Last 10)</h3>
+                        <button type="button" class="btn btn-secondary" id="exportSalesPDF" style="padding: 0.5rem 1rem;">
+                            📄 Export All Sales to PDF
+                        </button>
+                    </div>
+                    <div id="recentSalesList" class="transaction-list">
+                        <!-- Recent sales will appear here -->
+                    </div>
+                </div>
+
+                <!-- Transport Expenses -->
+                <div class="recent-transactions" style="margin-top: 2rem;">
+                    <h3>Transport Expenses</h3>
+                    <form id="transportExpenseForm" class="form-grid">
+                        <div class="form-group">
+                            <label for="transportDate">Date of Transport</label>
+                            <input type="date" id="transportDate" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="transportAmount">Transport Amount (₹)</label>
+                            <input type="number" id="transportAmount" step="0.01" min="0" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="transportBillImage">Bill Image Upload (Optional)</label>
+                            <input type="file" id="transportBillImage" accept="image/*">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Add Transport Expense</button>
+                    </form>
+
+                    <!-- Recent Transport Expenses List -->
+                    <div id="transportExpensesList" class="transaction-list" style="margin-top: 1rem;">
+                        <!-- Recent transport expenses will appear here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reports Section -->
+    <section class="section section-alt" id="reports">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Reports & Analytics</h2>
+                <p class="section-subtitle">Track your business performance</p>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-content">
+                        <h3>Today's Sales</h3>
+                        <p class="stat-value" id="todaySales">₹0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-content">
+                        <h3>This Month</h3>
+                        <p class="stat-value" id="monthSales">₹0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📦</div>
+                    <div class="stat-content">
+                        <h3>Total Stock</h3>
+                        <p class="stat-value" id="totalStock">0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💵</div>
+                    <div class="stat-content">
+                        <h3>Total Sales</h3>
+                        <p class="stat-value" id="totalSales">₹0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📋</div>
+                    <div class="stat-content">
+                        <h3>Total Products</h3>
+                        <p class="stat-value" id="totalProducts">0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-content">
+                        <h3>Estimated Revenue</h3>
+                        <p class="stat-value" id="estimatedRevenue">₹0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Add/Edit Product Modal -->
+    <div class="modal" id="productModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Add New Product</h3>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <form id="productForm" class="form">
+                <input type="hidden" id="productId">
+                
+                <div class="form-group">
+                    <label for="productName">Product Name</label>
+                    <input type="text" id="productName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="productCategory">Category</label>
+                    <select id="productCategory" required>
+                        <option value="men">Men</option>
+                        <option value="women">Women</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="productSize">Size</label>
+                    <input type="text" id="productSize" placeholder="e.g., 8, 9, 10" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="productPrice">Price (₹)</label>
+                    <input type="number" id="productPrice" step="0.01" min="0" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="productQuantity">Quantity</label>
+                    <input type="number" id="productQuantity" min="0" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="productBrand">Brand (Optional)</label>
+                    <input type="text" id="productBrand">
+                </div>
+
+                <div class="form-group">
+                    <label for="productColor">Color</label>
+                    <input type="text" id="productColor" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="productPurchaseDate">Date of Purchase</label>
+                    <input type="date" id="productPurchaseDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="productImage">Image Upload (Optional)</label>
+                    <input type="file" id="productImage" accept="image/*">
+                </div>
+
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary" id="saveProductBtn">Save Product</button>
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- jsPDF Library for PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
