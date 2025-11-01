@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products Gallery - Multi Brand Footwear</title>
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #004D4D 0%, #002626 100%);
+            min-height: 100vh;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 77, 77, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(230, 164, 0, 0.3);
+            border-top-color: #e6a400;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-overlay p {
+            color: #e6a400;
+            margin-top: 1rem;
+            font-size: 1.1rem;
+        }
+
+        /* Header */
+        .gallery-header {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #e6a400;
+        }
+
+        .gallery-header h1 {
+            color: #e6a400;
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        .back-btn {
+            background: #e6a400;
+            color: #004D4D;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: #ffb700;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(230, 164, 0, 0.3);
+        }
+
+        /* Gallery Container */
+        .gallery-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .gallery-info {
+            text-align: center;
+            color: #e6a400;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        /* Products Grid */
+        .products-gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        @media (max-width: 768px) {
+            .products-gallery-grid {
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                gap: 1rem;
+            }
+        }
+
+        /* Product Card */
+        .gallery-product-card {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 1rem;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .gallery-product-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(230, 164, 0, 0.4);
+        }
+
+        .gallery-product-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .gallery-product-card .no-image {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #003333 0%, #001a1a 100%);
+            font-size: 5rem;
+        }
+
+        /* Product Info Overlays */
+        .stock-badge {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(0, 0, 0, 0.85);
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 700;
+            font-size: 1rem;
+            border: 2px solid #e6a400;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        .stock-badge.low-stock {
+            background: rgba(239, 68, 68, 0.9);
+            border-color: #ef4444;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .size-badge {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            background: rgba(230, 164, 0, 0.95);
+            color: #004D4D;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 700;
+            font-size: 1rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        .color-badge {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            background: rgba(0, 77, 77, 0.95);
+            color: #e6a400;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 700;
+            font-size: 1rem;
+            border: 2px solid #e6a400;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 3rem;
+            padding-bottom: 2rem;
+        }
+
+        .pagination button {
+            background: #e6a400;
+            color: #004D4D;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #ffb700;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(230, 164, 0, 0.3);
+        }
+
+        .pagination button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .pagination-info {
+            color: #e6a400;
+            font-weight: 600;
+            font-size: 1.1rem;
+            min-width: 150px;
+            text-align: center;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #e6a400;
+        }
+
+        .empty-state-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h2 {
+            font-size: 2rem;
+            margin: 0 0 1rem 0;
+        }
+
+        .empty-state p {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+
+        /* Fade in animation */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <p>Loading products from Firebase...</p>
+    </div>
+
+    <!-- Header -->
+    <header class="gallery-header">
+        <h1>📸 Products Gallery</h1>
+        <a href="index.html" class="back-btn">← Back to Dashboard</a>
+    </header>
+
+    <!-- Gallery Container -->
+    <div class="gallery-container">
+        <div class="gallery-info" id="galleryInfo">
+            Showing <strong>0</strong> products
+        </div>
+
+        <!-- Products Grid -->
+        <div class="products-gallery-grid" id="productsGalleryGrid">
+            <!-- Products will be dynamically added here -->
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" id="pagination">
+            <button id="prevBtn" disabled>← Previous</button>
+            <span class="pagination-info" id="pageInfo">Page 1 of 1</span>
+            <button id="nextBtn" disabled>Next →</button>
+        </div>
+    </div>
+
+    <script>
+        // ===================================
+        // FIREBASE CONFIGURATION
+        // ===================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyA_Hwi9q-2mU3tfQXUiFUQYkz3V6hPu01k",
+            authDomain: "multibrandfootwear-80ce7.firebaseapp.com",
+            projectId: "multibrandfootwear-80ce7",
+            storageBucket: "multibrandfootwear-80ce7.firebasestorage.app",
+            messagingSenderId: "1007592141163",
+            appId: "1:1007592141163:web:1cb6f8b7a3811323369c2e",
+            measurementId: "G-ME9YZLJ5B5"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // ===================================
+        // GALLERY STATE
+        // ===================================
+        let allProducts = [];
+        let currentPage = 1;
+        const productsPerPage = 10;
+
+        // ===================================
+        // LOAD PRODUCTS FROM FIREBASE
+        // ===================================
+        async function loadProducts() {
+            try {
+                const productsSnapshot = await db.collection('products').get();
+                allProducts = productsSnapshot.docs.map(doc => ({ 
+                    id: doc.id, 
+                    ...doc.data() 
+                }));
+
+                // Sort products by name
+                allProducts.sort((a, b) => a.name.localeCompare(b.name));
+
+                renderGallery();
+                hideLoading();
+            } catch (error) {
+                console.error('Error loading products:', error);
+                showError();
+            }
+        }
+
+        // ===================================
+        // RENDER GALLERY
+        // ===================================
+        function renderGallery() {
+            const totalPages = Math.ceil(allProducts.length / productsPerPage);
+            const startIndex = (currentPage - 1) * productsPerPage;
+            const endIndex = startIndex + productsPerPage;
+            const productsToShow = allProducts.slice(startIndex, endIndex);
+
+            // Update info
+            document.getElementById('galleryInfo').innerHTML = 
+                `Showing <strong>${allProducts.length}</strong> product${allProducts.length !== 1 ? 's' : ''}`;
+
+            // Update pagination info
+            document.getElementById('pageInfo').textContent = 
+                `Page ${currentPage} of ${totalPages || 1}`;
+
+            // Update pagination buttons
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+
+            // Render products
+            const galleryGrid = document.getElementById('productsGalleryGrid');
+
+            if (allProducts.length === 0) {
+                galleryGrid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <div class="empty-state-icon">📦</div>
+                        <h2>No Products Available</h2>
+                        <p>Add products to see them in the gallery</p>
+                    </div>
+                `;
+                return;
+            }
+
+            galleryGrid.innerHTML = productsToShow.map(product => {
+                const stockClass = product.quantity < 10 ? 'low-stock' : '';
+                const imageHtml = product.image 
+                    ? `<img src="${product.image}" alt="${product.name}" onerror="this.parentElement.innerHTML='<div class=\\'no-image\\'>👟</div>'">` 
+                    : '<div class="no-image">👟</div>';
+
+                return `
+                    <div class="gallery-product-card fade-in">
+                        ${imageHtml}
+                        <div class="stock-badge ${stockClass}">
+                            Stock: ${product.quantity}
+                        </div>
+                        <div class="size-badge">
+                            Size: ${product.size}
+                        </div>
+                        <div class="color-badge">
+                            ${product.color}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ===================================
+        // PAGINATION HANDLERS
+        // ===================================
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderGallery();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            const totalPages = Math.ceil(allProducts.length / productsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderGallery();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+
+        // ===================================
+        // REAL-TIME UPDATES
+        // ===================================
+        function setupRealtimeListener() {
+            db.collection('products').onSnapshot((snapshot) => {
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === 'added') {
+                        const newProduct = { id: change.doc.id, ...change.doc.data() };
+                        // Check if product already exists (initial load)
+                        if (!allProducts.find(p => p.id === newProduct.id)) {
+                            allProducts.push(newProduct);
+                            allProducts.sort((a, b) => a.name.localeCompare(b.name));
+                            renderGallery();
+                        }
+                    }
+                    if (change.type === 'modified') {
+                        const modifiedProduct = { id: change.doc.id, ...change.doc.data() };
+                        const index = allProducts.findIndex(p => p.id === modifiedProduct.id);
+                        if (index !== -1) {
+                            allProducts[index] = modifiedProduct;
+                            renderGallery();
+                        }
+                    }
+                    if (change.type === 'removed') {
+                        allProducts = allProducts.filter(p => p.id !== change.doc.id);
+                        
+                        // Adjust current page if needed
+                        const totalPages = Math.ceil(allProducts.length / productsPerPage);
+                        if (currentPage > totalPages && currentPage > 1) {
+                            currentPage = totalPages;
+                        }
+                        
+                        renderGallery();
+                    }
+                });
+            }, (error) => {
+                console.error('Error listening to product changes:', error);
+            });
+        }
+
+        // ===================================
+        // LOADING & ERROR HANDLING
+        // ===================================
+        function hideLoading() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            setTimeout(() => {
+                loadingOverlay.classList.add('hidden');
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                }, 300);
+            }, 500);
+        }
+
+        function showError() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.innerHTML = `
+                <div style="text-align: center; color: #e6a400;">
+                    <h2>⚠️ Error Loading Products</h2>
+                    <p>Unable to connect to Firebase. Please check your connection and refresh.</p>
+                    <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.75rem 2rem; background: #e6a400; color: #004D4D; border: none; border-radius: 0.5rem; cursor: pointer; font-weight: 600;">
+                        Refresh Page
+                    </button>
+                </div>
+            `;
+        }
+
+        // ===================================
+        // INITIALIZE
+        // ===================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadProducts();
+            setupRealtimeListener();
+        });
+    </script>
+</body>
+</html>
