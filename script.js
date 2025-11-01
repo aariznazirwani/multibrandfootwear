@@ -1192,8 +1192,7 @@ let charts3D = {
     categoryDistribution: null,
     topProducts: null,
     paymentMode: null,
-    monthlyRevenue: null,
-    stockStatus: null
+    monthlyRevenue: null
 };
 
 function initialize3DCharts() {
@@ -1206,7 +1205,6 @@ function initialize3DCharts() {
     initTopProducts3D();
     initPaymentMode3D();
     initMonthlyRevenue3D();
-    initStockStatus3D();
     
     // Update charts with actual data
     update3DChartsData();
@@ -1532,76 +1530,6 @@ function initMonthlyRevenue3D() {
     });
 }
 
-function initStockStatus3D() {
-    const ctx = document.getElementById('stockStatus3D');
-    if (!ctx) return;
-    
-    charts3D.stockStatus = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['In Stock (>10)', 'Low Stock (1-10)', 'Out of Stock (0)'],
-            datasets: [{
-                label: 'Products',
-                data: [0, 0, 0],
-                backgroundColor: [
-                    'rgba(16, 185, 129, 0.8)',
-                    'rgba(230, 164, 0, 0.8)',
-                    'rgba(239, 68, 68, 0.8)'
-                ],
-                borderColor: [
-                    '#10b981',
-                    '#e6a400',
-                    '#ef4444'
-                ],
-                borderWidth: 2,
-                borderRadius: 10,
-                borderSkipped: false,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0, 77, 77, 0.9)',
-                    titleColor: '#e6a400',
-                    bodyColor: '#ffffff',
-                    borderColor: '#e6a400',
-                    borderWidth: 2,
-                    padding: 12,
-                    displayColors: false,
-                    callbacks: {
-                        label: (context) => `${context.parsed.y} products`
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
-                    },
-                    grid: {
-                        color: 'rgba(0, 77, 77, 0.1)'
-                    }
-                },
-                x: {
-                    grid: {
-                        display: false
-                    }
-                }
-            },
-            animation: {
-                duration: 2000,
-                easing: 'easeInOutQuart'
-            }
-        }
-    });
-}
-
 function createGradient(ctx, color1, color2) {
     const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 300);
     gradient.addColorStop(0, color1);
@@ -1615,7 +1543,6 @@ function update3DChartsData() {
     updateTopProductsData();
     updatePaymentModeData();
     updateMonthlyRevenueData();
-    updateStockStatusData();
 }
 
 function updateSalesTrendData() {
@@ -1633,9 +1560,9 @@ function updateSalesTrendData() {
     
     // Calculate sales for each day
     inventory.sales.forEach(sale => {
-        const saleDate = sale.date;
+        const saleDate = new Date(sale.saleDate || sale.date).toISOString().split('T')[0];
         if (salesByDay.hasOwnProperty(saleDate)) {
-            salesByDay[saleDate] += sale.totalPrice;
+            salesByDay[saleDate] += sale.totalAmount;
         }
     });
     
@@ -1689,7 +1616,7 @@ function updateTopProductsData() {
         if (!productRevenue[productName]) {
             productRevenue[productName] = 0;
         }
-        productRevenue[productName] += sale.totalPrice;
+        productRevenue[productName] += sale.totalAmount;
     });
     
     const sortedProducts = Object.entries(productRevenue)
@@ -1717,9 +1644,9 @@ function updatePaymentModeData() {
     
     inventory.sales.forEach(sale => {
         if (sale.paymentMode === 'Cash') {
-            cashTotal += sale.totalPrice;
+            cashTotal += sale.totalAmount;
         } else if (sale.paymentMode === 'UPI') {
-            upiTotal += sale.totalPrice;
+            upiTotal += sale.totalAmount;
         }
     });
     
@@ -1747,9 +1674,10 @@ function updateMonthlyRevenueData() {
     
     // Calculate revenue for each month
     inventory.sales.forEach(sale => {
-        const saleMonth = sale.date.substring(0, 7);
+        const saleDate = sale.saleDate || sale.date;
+        const saleMonth = saleDate.substring(0, 7);
         if (revenueByMonth.hasOwnProperty(saleMonth)) {
-            revenueByMonth[saleMonth] += sale.totalPrice;
+            revenueByMonth[saleMonth] += sale.totalAmount;
         }
     });
     
@@ -1774,31 +1702,6 @@ function updateMonthlyRevenueData() {
     document.getElementById('currentMonthRev').textContent = '₹' + currentMonth.toLocaleString();
     document.getElementById('lastMonthRev').textContent = '₹' + lastMonth.toLocaleString();
     document.getElementById('growthRate').textContent = (growth >= 0 ? '+' : '') + growth + '%';
-}
-
-function updateStockStatusData() {
-    let inStock = 0;
-    let lowStock = 0;
-    let outOfStock = 0;
-    
-    inventory.products.forEach(product => {
-        if (product.quantity === 0) {
-            outOfStock++;
-        } else if (product.quantity <= 10) {
-            lowStock++;
-        } else {
-            inStock++;
-        }
-    });
-    
-    if (charts3D.stockStatus) {
-        charts3D.stockStatus.data.datasets[0].data = [inStock, lowStock, outOfStock];
-        charts3D.stockStatus.update();
-    }
-    
-    document.getElementById('inStockCount').textContent = inStock;
-    document.getElementById('lowStockCount').textContent = lowStock;
-    document.getElementById('outOfStockCount').textContent = outOfStock;
 }
 
 // Initialize 3D charts after data is loaded
