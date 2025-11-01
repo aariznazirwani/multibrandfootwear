@@ -545,6 +545,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             renderGeneralExpenses();
             updateReports();
             
+            // Update 3D charts if they're already initialized
+            if (charts3D.categoryDistribution) {
+                update3DChartsData();
+            }
+            
             // Hide loading overlay
             setTimeout(() => {
                 loadingOverlay.classList.add('hidden');
@@ -661,6 +666,9 @@ async function deleteProduct(id) {
             renderProducts();
             populateProductDropdowns();
             updateReports();
+            if (charts3D.categoryDistribution) {
+                update3DChartsData();
+            }
             showNotification('Product deleted successfully', 'success');
         } catch (error) {
             showNotification('Error deleting product. Please try again.', 'error');
@@ -710,6 +718,9 @@ productForm.addEventListener('submit', async (e) => {
             renderProducts();
             populateProductDropdowns();
             updateReports();
+            if (charts3D.categoryDistribution) {
+                update3DChartsData();
+            }
         };
         
         // If image file is selected, convert to base64
@@ -823,6 +834,9 @@ salesForm.addEventListener('submit', async (e) => {
         renderRecentSales();
         populateProductDropdowns();
         updateReports();
+        if (charts3D.categoryDistribution) {
+            update3DChartsData();
+        }
     } else {
         showNotification(result.message, 'error');
     }
@@ -1206,8 +1220,10 @@ function initialize3DCharts() {
     initPaymentMode3D();
     initMonthlyRevenue3D();
     
-    // Update charts with actual data
-    update3DChartsData();
+    // Update charts with actual data (wait a bit for Firebase data to load if not ready)
+    setTimeout(() => {
+        update3DChartsData();
+    }, 500);
 }
 
 function initSalesTrend3D() {
@@ -1591,7 +1607,10 @@ function updateCategoryDistributionData() {
     let menStock = 0;
     let womenStock = 0;
     
+    console.log('Updating category distribution. Total products:', inventory.products.length);
+    
     inventory.products.forEach(product => {
+        console.log('Product:', product.name, 'Category:', product.category, 'Quantity:', product.quantity);
         if (product.category === 'men') {
             menStock += product.quantity;
         } else if (product.category === 'women') {
@@ -1599,9 +1618,14 @@ function updateCategoryDistributionData() {
         }
     });
     
+    console.log('Men Stock:', menStock, 'Women Stock:', womenStock);
+    
     if (charts3D.categoryDistribution) {
         charts3D.categoryDistribution.data.datasets[0].data = [menStock, womenStock];
-        charts3D.categoryDistribution.update();
+        charts3D.categoryDistribution.update('active');
+        console.log('Category distribution chart updated');
+    } else {
+        console.log('Category distribution chart not initialized yet');
     }
     
     document.getElementById('menStock').textContent = menStock;
