@@ -672,21 +672,31 @@ function generateProductCode(productName) {
     const words = productName.trim().split(/\s+/);
     const initials = words.map(word => word.charAt(0).toUpperCase()).join('');
     
-    // Generate a unique 4-digit number
-    const existingCodes = inventory.products
-        .filter(p => p.productCode && p.productCode.startsWith('MBF' + initials))
+    // Get all existing last 2 digits from all products
+    const existingLastTwoDigits = inventory.products
+        .filter(p => p.productCode)
         .map(p => {
-            const match = p.productCode.match(/\d{5}$/);
-            return match ? parseInt(match[0]) : 0;
-        });
+            const match = p.productCode.match(/\d{2}$/);
+            return match ? parseInt(match[0]) : -1;
+        })
+        .filter(num => num >= 0);
     
-    let nextNumber = 1;
-    if (existingCodes.length > 0) {
-        nextNumber = Math.max(...existingCodes) + 1;
+    // Find the next available last 2 digits (00-99)
+    let lastTwoDigits = 0;
+    while (existingLastTwoDigits.includes(lastTwoDigits) && lastTwoDigits < 100) {
+        lastTwoDigits++;
     }
     
-    // Format: MBF + initials + 5-digit number (padded with zeros)
-    const productCode = 'MBF' + initials + String(nextNumber).padStart(5, '0');
+    if (lastTwoDigits >= 100) {
+        // If all 00-99 are used, start from 100+
+        lastTwoDigits = existingLastTwoDigits.length > 0 ? Math.max(...existingLastTwoDigits) + 1 : 0;
+    }
+    
+    // Generate random 3 digits for the first part
+    const firstThreeDigits = Math.floor(100 + Math.random() * 900); // 100-999
+    
+    // Format: MBF + initials + 3 random digits + 2 unique digits
+    const productCode = 'MBF' + initials + String(firstThreeDigits) + String(lastTwoDigits).padStart(2, '0');
     return productCode;
 }
 
