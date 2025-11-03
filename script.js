@@ -391,15 +391,7 @@ function getCategoryName(category) {
     return categories[category] || category;
 }
 
-function populateProductDropdowns() {
-    const saleProductSelect = document.getElementById('saleProduct');
-    
-    const options = inventory.products.map(p => 
-        `<option value="${p.id}">${p.name} (Size: ${p.size})</option>`
-    ).join('');
-    
-    saleProductSelect.innerHTML = '<option value="">-- Choose a product --</option>' + options;
-}
+
 
 function renderRecentSales() {
     const recentSalesList = document.getElementById('recentSalesList');
@@ -540,7 +532,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (success) {
             // Initialize the app
             renderProducts();
-            populateProductDropdowns();
             renderRecentSales();
             renderTransportExpenses();
             renderGeneralExpenses();
@@ -725,7 +716,6 @@ async function deleteProduct(id) {
         try {
             await inventory.deleteProduct(id);
             renderProducts();
-            populateProductDropdowns();
             updateReports();
             if (charts3D.categoryDistribution) {
                 update3DChartsData();
@@ -778,7 +768,6 @@ productForm.addEventListener('submit', async (e) => {
             
             closeProductModal();
             renderProducts();
-            populateProductDropdowns();
             updateReports();
             if (charts3D.categoryDistribution) {
                 update3DChartsData();
@@ -809,55 +798,114 @@ productForm.addEventListener('submit', async (e) => {
 
 const salesForm = document.getElementById('salesForm');
 
-// Auto-fill price, stock, size, and color when product is selected
-document.getElementById('saleProduct').addEventListener('change', (e) => {
-    const productId = parseInt(e.target.value);
+// Product code search functionality for sales
+document.getElementById('saleProductCode').addEventListener('input', (e) => {
+    const searchTerm = e.target.value.trim();
+    const suggestionsDiv = document.getElementById('productSuggestions');
+    
+    if (searchTerm.length === 0) {
+        suggestionsDiv.style.display = 'none';
+        suggestionsDiv.innerHTML = '';
+        return;
+    }
+    
+    // Check if it's 2 digits - search by last 2 digits
+    const isTwoDigits = /^\d{2}$/.test(searchTerm);
+    
+    let matchingProducts = [];
+    
+    if (isTwoDigits) {
+        matchingProducts = inventory.products.filter(p => 
+            p.productCode && p.productCode.slice(-2) === searchTerm
+        );
+    } else {
+        // Search by product code or name
+        matchingProducts = inventory.products.filter(p => 
+            (p.productCode && p.productCode.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            p.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }
+    
+    if (matchingProducts.length > 0) {
+        suggestionsDiv.innerHTML = matchingProducts.map(product => `
+            <div class="product-suggestion" 
+                 style="padding: 0.75rem; cursor: pointer; border-bottom: 1px solid #eee; transition: background 0.2s;"
+                 onmouseover="this.style.background='#f5f5f5'" 
+                 onmouseout="this.style.background='white'"
+                 onclick="selectSaleProduct(${product.id})">
+                <div style="font-weight: 600; color: #004D4D;">${product.name}</div>
+                <div style="font-size: 0.85rem; color: #e6a400;">Code: ${product.productCode}</div>
+                <div style="font-size: 0.85rem; color: #666;">Stock: ${product.quantity} | Size: ${product.size}</div>
+            </div>
+        `).join('');
+        suggestionsDiv.style.display = 'block';
+    } else {
+        suggestionsDiv.innerHTML = '<div style="padding: 0.75rem; color: #999; text-align: center;">No products found</div>';
+        suggestionsDiv.style.display = 'block';
+    }
+});
+
+// Function to select a product from suggestions
+function selectSaleProduct(productId) {
+    const product = inventory.getProduct(productId);
+    if (!product) return;
+    
     const saleSize = document.getElementById('saleSize');
     const saleColor = document.getElementById('saleColor');
+    const suggestionsDiv = document.getElementById('productSuggestions');
     
-    if (productId) {
-        const product = inventory.getProduct(productId);
-        if (product) {
-            // Calculate sale price: (Original Price + Transport Cost) + 90% profit + ₹100 labor
-            const originalPrice = parseFloat(product.originalPrice || product.price);
-            const transportCost = parseFloat(product.transportCost || 0);
-            const totalCostPrice = originalPrice + transportCost;
-            const profitMargin = totalCostPrice * 0.90; // 90% profit
-            const laborCharge = 100;
-            const salePrice = totalCostPrice + profitMargin + laborCharge;
-            
-            document.getElementById('salePrice').value = Math.round(salePrice * 100) / 100; // Round to 2 decimals
-            document.getElementById('saleStock').value = product.quantity;
-            
-            // Populate size dropdown
-            saleSize.innerHTML = '<option value="">-- Select Size --</option>';
-            if (product.size) {
-                const sizes = product.size.split(',').map(s => s.trim()).filter(s => s);
-                sizes.forEach(size => {
-                    const option = document.createElement('option');
-                    option.value = size;
-                    option.textContent = size;
-                    saleSize.appendChild(option);
-                });
-            }
-            
-            // Populate color dropdown
-            saleColor.innerHTML = '<option value="">-- Select Color --</option>';
-            if (product.color) {
-                const colors = product.color.split(',').map(c => c.trim()).filter(c => c);
-                colors.forEach(color => {
-                    const option = document.createElement('option');
-                    option.value = color;
-                    option.textContent = color;
-                    saleColor.appendChild(option);
-                });
-            }
-        }
-    } else {
-        document.getElementById('saleStock').value = '';
-        document.getElementById('salePrice').value = '';
-        saleSize.innerHTML = '<option value="">-- Select Size --</option>';
-        saleColor.innerHTML = '<option value="">-- Select Color --</option>';
+    // Set hidden product ID
+    document.getElementById('saleProduct').value = productId;
+    
+    // Set the search field to show selected product
+    document.getElementById('saleProductCode').value = `${product.productCode} - ${product.name}`;
+    
+    // Hide suggestions
+    suggestionsDiv.style.display = 'none';
+    
+    // Calculate sale price: (Original Price + Transport Cost) + 40% profit + ₹150 labor
+    const originalPrice = parseFloat(product.originalPrice || product.price);
+    const transportCost = parseFloat(product.transportCost || 0);
+    const totalCostPrice = originalPrice + transportCost;
+    const profitMargin = totalCostPrice * 0.40; // 40% profit
+    const laborCharge = 150;
+    const salePrice = totalCostPrice + profitMargin + laborCharge;
+    
+    document.getElementById('salePrice').value = Math.round(salePrice * 100) / 100; // Round to 2 decimals
+    document.getElementById('saleStock').value = product.quantity;
+    
+    // Populate size dropdown
+    saleSize.innerHTML = '<option value="">-- Select Size --</option>';
+    if (product.size) {
+        const sizes = product.size.split(',').map(s => s.trim()).filter(s => s);
+        sizes.forEach(size => {
+            const option = document.createElement('option');
+            option.value = size;
+            option.textContent = size;
+            saleSize.appendChild(option);
+        });
+    }
+    
+    // Populate color dropdown
+    saleColor.innerHTML = '<option value="">-- Select Color --</option>';
+    if (product.color) {
+        const colors = product.color.split(',').map(c => c.trim()).filter(c => c);
+        colors.forEach(color => {
+            const option = document.createElement('option');
+            option.value = color;
+            option.textContent = color;
+            saleColor.appendChild(option);
+        });
+    }
+}
+
+// Close suggestions when clicking outside
+document.addEventListener('click', function(e) {
+    const suggestionsDiv = document.getElementById('productSuggestions');
+    const searchInput = document.getElementById('saleProductCode');
+    
+    if (e.target !== searchInput && e.target !== suggestionsDiv && !suggestionsDiv.contains(e.target)) {
+        suggestionsDiv.style.display = 'none';
     }
 });
 
@@ -891,10 +939,11 @@ salesForm.addEventListener('submit', async (e) => {
         document.getElementById('saleStock').value = '';
         document.getElementById('saleSize').value = '';
         document.getElementById('saleColor').value = '';
+        document.getElementById('saleProductCode').value = '';
+        document.getElementById('saleProduct').value = '';
         document.getElementById('saleDate').valueAsDate = new Date();
         renderProducts();
         renderRecentSales();
-        populateProductDropdowns();
         updateReports();
         if (charts3D.categoryDistribution) {
             update3DChartsData();
