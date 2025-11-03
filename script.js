@@ -688,7 +688,7 @@ productForm.addEventListener('submit', async (e) => {
     
     try {
         // Function to save product data
-        const saveProduct = async (imageUrl) => {
+        const saveProduct = async (imageDataUrl) => {
             const originalPrice = parseFloat(document.getElementById('productPrice').value);
             const productData = {
                 name: document.getElementById('productName').value.trim(),
@@ -701,7 +701,7 @@ productForm.addEventListener('submit', async (e) => {
                 brand: document.getElementById('productBrand').value.trim(),
                 color: document.getElementById('productColor').value.trim(),
                 purchaseDate: document.getElementById('productPurchaseDate').value,
-                image: imageUrl
+                image: imageDataUrl
             };
             
             if (productId) {
@@ -723,35 +723,13 @@ productForm.addEventListener('submit', async (e) => {
             }
         };
         
-        // If image file is selected, upload to Firebase Storage
+        // If image file is selected, convert to base64
         if (imageFile) {
-            showNotification('Uploading image...', 'info');
-            
-            // Create a unique filename
-            const timestamp = Date.now();
-            const fileName = `products/${timestamp}_${imageFile.name}`;
-            const storageRef = storage.ref(fileName);
-            
-            // Upload the file
-            const uploadTask = storageRef.put(imageFile);
-            
-            uploadTask.on('state_changed',
-                (snapshot) => {
-                    // Progress tracking (optional)
-                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    console.log('Upload is ' + progress + '% done');
-                },
-                (error) => {
-                    // Handle upload error
-                    console.error('Upload error:', error);
-                    showNotification('Error uploading image. Please try again.', 'error');
-                },
-                async () => {
-                    // Upload completed successfully, get download URL
-                    const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-                    await saveProduct(downloadURL);
-                }
-            );
+            const reader = new FileReader();
+            reader.onload = async function(event) {
+                await saveProduct(event.target.result);
+            };
+            reader.readAsDataURL(imageFile);
         } else {
             // If editing and no new image, keep existing image
             const existingImage = productId ? inventory.getProduct(parseInt(productId)).image : '';
@@ -900,35 +878,13 @@ transportExpenseForm.addEventListener('submit', async (e) => {
             }
         };
         
-        // If bill image file is selected, upload to Firebase Storage
+        // If bill image file is selected, convert to base64
         if (billImageFile) {
-            showNotification('Uploading bill image...', 'info');
-            
-            // Create a unique filename
-            const timestamp = Date.now();
-            const fileName = `transport_bills/${timestamp}_${billImageFile.name}`;
-            const storageRef = storage.ref(fileName);
-            
-            // Upload the file
-            const uploadTask = storageRef.put(billImageFile);
-            
-            uploadTask.on('state_changed',
-                (snapshot) => {
-                    // Progress tracking
-                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    console.log('Upload is ' + progress + '% done');
-                },
-                (error) => {
-                    // Handle upload error
-                    console.error('Upload error:', error);
-                    showNotification('Error uploading bill image. Please try again.', 'error');
-                },
-                async () => {
-                    // Upload completed successfully, get download URL
-                    const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-                    await saveTransportExpense(downloadURL);
-                }
-            );
+            const reader = new FileReader();
+            reader.onload = async function(event) {
+                await saveTransportExpense(event.target.result);
+            };
+            reader.readAsDataURL(billImageFile);
         } else {
             // No image selected
             await saveTransportExpense('');
