@@ -84,12 +84,11 @@
             <div class="form-container">
                 <form id="salesForm" class="form">
                     <div class="form-group">
-                        <label for="saleProductCode">Search Product by Code</label>
-                        <input type="text" id="saleProductCode" placeholder="Enter last 2 digits of product code" required>
-                        <div id="productSuggestions" style="position: relative; background: white; border: 1px solid #ddd; border-radius: 0.5rem; margin-top: 0.5rem; max-height: 200px; overflow-y: auto; display: none;"></div>
+                        <label for="saleProduct">Select Product</label>
+                        <select id="saleProduct" required>
+                            <option value="">-- Choose a product --</option>
+                        </select>
                     </div>
-                    
-                    <input type="hidden" id="saleProduct">
 
                     <div class="form-group">
                         <label for="saleStock">Stock</label>
