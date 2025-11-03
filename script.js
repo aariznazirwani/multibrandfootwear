@@ -282,14 +282,14 @@ class InventoryManager {
 
     getEstimatedRevenue() {
         // Calculate estimated revenue for all products in stock
-        // Formula: ((Original Price + Transport Cost) + 90% profit + ₹100 labor) × Stock Quantity
+        // Formula: ((Wholesale Price + Transport Cost) + 40% profit + ₹150 labor) × Stock Quantity
         return this.products.reduce((sum, product) => {
-            const originalPrice = parseFloat(product.originalPrice || product.price);
+            const wholesalePrice = parseFloat(product.originalPrice || product.price);
             const transportCost = parseFloat(product.transportCost || 0);
-            const totalCostPrice = originalPrice + transportCost;
-            const profitMargin = totalCostPrice * 0.90; // 90% profit
-            const laborCharge = 100;
-            const sellingPrice = totalCostPrice + profitMargin + laborCharge;
+            const totalCost = wholesalePrice + transportCost;
+            const profitMargin = totalCost * 0.40; // 40% profit
+            const laborCharge = 150;
+            const sellingPrice = totalCost + profitMargin + laborCharge;
             const revenue = sellingPrice * product.quantity;
             return sum + revenue;
         }, 0);
@@ -353,7 +353,16 @@ function renderProducts(productsToRender = inventory.products) {
         return;
     }
 
-    productGrid.innerHTML = productsToRender.map(product => `
+    productGrid.innerHTML = productsToRender.map(product => {
+        // Calculate selling price: (Wholesale Price + Transport Cost) + 40% profit + ₹150 labor
+        const wholesalePrice = parseFloat(product.price);
+        const transportCost = parseFloat(product.transportCost || 0);
+        const totalCost = wholesalePrice + transportCost;
+        const profitMargin = totalCost * 0.40; // 40% profit
+        const laborCharge = 150;
+        const sellingPrice = totalCost + profitMargin + laborCharge;
+        
+        return `
         <div class="product-card fade-in" data-id="${product.id}">
             <div class="product-image">
                 ${product.image ? 
@@ -370,7 +379,7 @@ function renderProducts(productsToRender = inventory.products) {
                     ${product.brand ? `<span class="product-badge">${product.brand}</span>` : ''}
                     ${product.color ? `<span class="product-badge">Color: ${product.color}</span>` : ''}
                 </div>
-                <div class="product-price">₹${(parseFloat(product.price) + parseFloat(product.transportCost || 0)).toLocaleString('en-IN')}</div>
+                <div class="product-price">₹${Math.round(sellingPrice).toLocaleString('en-IN')}</div>
                 <div class="product-stock ${product.quantity < 10 ? 'stock-low' : 'stock-ok'}">
                     Stock: ${product.quantity} units
                 </div>
@@ -380,7 +389,8 @@ function renderProducts(productsToRender = inventory.products) {
                 </div>
             </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function getCategoryName(category) {
@@ -818,15 +828,15 @@ document.getElementById('saleProduct').addEventListener('change', (e) => {
     if (productId) {
         const product = inventory.getProduct(productId);
         if (product) {
-            // Calculate sale price: (Original Price + Transport Cost) + 90% profit + ₹100 labor
-            const originalPrice = parseFloat(product.originalPrice || product.price);
+            // Calculate sale price: (Wholesale Price + Transport Cost) + 40% profit + ₹150 labor
+            const wholesalePrice = parseFloat(product.originalPrice || product.price);
             const transportCost = parseFloat(product.transportCost || 0);
-            const totalCostPrice = originalPrice + transportCost;
-            const profitMargin = totalCostPrice * 0.90; // 90% profit
-            const laborCharge = 100;
-            const salePrice = totalCostPrice + profitMargin + laborCharge;
+            const totalCost = wholesalePrice + transportCost;
+            const profitMargin = totalCost * 0.40; // 40% profit
+            const laborCharge = 150;
+            const salePrice = totalCost + profitMargin + laborCharge;
             
-            document.getElementById('salePrice').value = Math.round(salePrice * 100) / 100; // Round to 2 decimals
+            document.getElementById('salePrice').value = Math.round(salePrice); // Round to whole number
             document.getElementById('saleStock').value = product.quantity;
             
             // Populate size dropdown
