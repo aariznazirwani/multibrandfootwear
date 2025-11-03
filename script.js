@@ -363,6 +363,7 @@ function renderProducts(productsToRender = inventory.products) {
             </div>
             <div class="product-info">
                 <h3 class="product-name">${product.name}</h3>
+                ${product.productCode ? `<div class="product-code" style="color: #e6a400; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem;">Code: ${product.productCode}</div>` : ''}
                 <div class="product-details">
                     <span class="product-badge">${getCategoryName(product.category)}</span>
                     <span class="product-badge">Size: ${product.size}</span>
@@ -586,11 +587,24 @@ function filterProducts() {
     const categoryFilter = document.getElementById('categoryFilter').value;
     
     const filtered = inventory.products.filter(product => {
-        const matchesSearch = 
-            product.name.toLowerCase().includes(searchTerm) ||
-            product.size.toLowerCase().includes(searchTerm) ||
-            product.brand.toLowerCase().includes(searchTerm) ||
-            getCategoryName(product.category).toLowerCase().includes(searchTerm);
+        // Check if search term is 2 digits (last 2 digits of product code)
+        const isTwoDigits = /^\d{2}$/.test(searchTerm);
+        
+        let matchesSearch = false;
+        
+        if (isTwoDigits && product.productCode) {
+            // Search by last 2 digits of product code
+            const lastTwoDigits = product.productCode.slice(-2);
+            matchesSearch = lastTwoDigits === searchTerm;
+        } else {
+            // Regular search
+            matchesSearch = 
+                product.name.toLowerCase().includes(searchTerm) ||
+                product.size.toLowerCase().includes(searchTerm) ||
+                product.brand.toLowerCase().includes(searchTerm) ||
+                (product.productCode && product.productCode.toLowerCase().includes(searchTerm)) ||
+                getCategoryName(product.category).toLowerCase().includes(searchTerm);
+        }
         
         const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter;
         
@@ -633,6 +647,7 @@ function openProductModal(productId = null) {
         document.getElementById('modalTitle').textContent = 'Edit Product';
         document.getElementById('productId').value = product.id;
         document.getElementById('productName').value = product.name;
+        document.getElementById('productCode').value = product.productCode || '';
         document.getElementById('productCategory').value = product.category;
         document.getElementById('productSize').value = product.size;
         document.getElementById('productPrice').value = product.price;
@@ -646,9 +661,45 @@ function openProductModal(productId = null) {
         document.getElementById('modalTitle').textContent = 'Add New Product';
         productForm.reset();
         document.getElementById('productId').value = '';
+        document.getElementById('productCode').value = '';
         document.getElementById('productPurchaseDate').valueAsDate = new Date();
     }
 }
+
+// Generate product code from product name
+function generateProductCode(productName) {
+    // Extract first letter of each word
+    const words = productName.trim().split(/\s+/);
+    const initials = words.map(word => word.charAt(0).toUpperCase()).join('');
+    
+    // Generate a unique 4-digit number
+    const existingCodes = inventory.products
+        .filter(p => p.productCode && p.productCode.startsWith('MBF' + initials))
+        .map(p => {
+            const match = p.productCode.match(/\d{5}$/);
+            return match ? parseInt(match[0]) : 0;
+        });
+    
+    let nextNumber = 1;
+    if (existingCodes.length > 0) {
+        nextNumber = Math.max(...existingCodes) + 1;
+    }
+    
+    // Format: MBF + initials + 5-digit number (padded with zeros)
+    const productCode = 'MBF' + initials + String(nextNumber).padStart(5, '0');
+    return productCode;
+}
+
+// Auto-generate product code when product name changes
+document.getElementById('productName').addEventListener('input', function() {
+    const productName = this.value.trim();
+    const productId = document.getElementById('productId').value;
+    
+    if (productName && !productId) { // Only auto-generate for new products
+        const productCode = generateProductCode(productName);
+        document.getElementById('productCode').value = productCode;
+    }
+});
 
 function closeProductModal() {
     productModal.classList.remove('active');
@@ -692,6 +743,7 @@ productForm.addEventListener('submit', async (e) => {
             const originalPrice = parseFloat(document.getElementById('productPrice').value);
             const productData = {
                 name: document.getElementById('productName').value.trim(),
+                productCode: document.getElementById('productCode').value.trim(),
                 category: document.getElementById('productCategory').value,
                 size: document.getElementById('productSize').value.trim(),
                 price: originalPrice, // Keep original price (never changes)

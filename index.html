@@ -51,7 +51,7 @@
             <!-- Search and Filter -->
             <div class="search-filter-container">
                 <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="Search products by name, size, or category...">
+                    <input type="text" id="searchInput" placeholder="Search by name, code, or enter last 2 digits of product code...">
                     <span class="search-icon">🔍</span>
                 </div>
                 <div class="filter-box">
@@ -412,6 +412,11 @@
                 <div class="form-group">
                     <label for="productName">Product Name</label>
                     <input type="text" id="productName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="productCode">Product Code</label>
+                    <input type="text" id="productCode" readonly style="background-color: #f5f5f5; cursor: not-allowed;" placeholder="Auto-generated">
                 </div>
 
                 <div class="form-group">
