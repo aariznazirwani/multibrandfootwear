@@ -540,6 +540,116 @@ body {
 }
 
 /* ===================================
+   SCROLL TO TOP BUTTON
+   =================================== */
+.scroll-to-top {
+    position: fixed;
+    bottom: 6rem;
+    right: 2rem;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: var(--secondary-color);
+    border: 2px solid var(--secondary-color);
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+    transition: var(--transition);
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Show scroll to top only on desktop */
+@media (min-width: 768px) {
+    .scroll-to-top {
+        display: flex;
+    }
+}
+
+.scroll-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.scroll-to-top:hover {
+    transform: translateY(-5px) scale(1.1);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    background: var(--secondary-color);
+    color: var(--primary-color);
+}
+
+/* ===================================
+   FIXED BOTTOM NAVIGATION (MOBILE)
+   =================================== */
+.bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(180deg, var(--primary-color) 0%, #003333 100%);
+    border-top: 3px solid var(--secondary-color);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+    z-index: 999;
+    padding: 0.75rem 0;
+}
+
+@media (max-width: 767px) {
+    .bottom-nav {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    /* Hide hamburger menu on mobile portrait */
+    .hamburger-menu {
+        display: none !important;
+    }
+    
+    .header-container {
+        padding: 1rem 1rem !important;
+    }
+}
+
+.bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 2rem;
+    text-decoration: none;
+    color: #ffffff;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+}
+
+.bottom-nav-item:hover,
+.bottom-nav-item:active {
+    background-color: rgba(230, 164, 0, 0.2);
+    transform: translateY(-3px);
+}
+
+.bottom-nav-icon {
+    font-size: 1.75rem;
+    margin-bottom: 0.25rem;
+    color: var(--secondary-color);
+}
+
+.bottom-nav-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ===================================
    FORMS
    =================================== */
 .form-container {
@@ -1255,14 +1365,6 @@ body.dark-mode .chart-stat {
         font-size: 1.5rem;
         bottom: 1rem;
         right: 1rem;
-    }
-    
-    .scroll-to-top {
-        width: 45px;
-        height: 45px;
-        font-size: 1.25rem;
-        bottom: 1rem;
-        left: 1rem;
     }
     
     .stat-card {
