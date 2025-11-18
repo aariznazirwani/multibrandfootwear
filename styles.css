@@ -105,24 +105,34 @@ body {
     left: 1rem;
     top: 50%;
     transform: translateY(-50%);
-    background: none;
+    background: transparent;
     border: none;
     cursor: pointer;
-    padding: 0.5rem;
+    padding: 0.75rem;
     z-index: 1001;
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    width: 45px;
+    height: 45px;
     transition: var(--transition);
+    border-radius: 4px;
+}
+
+.hamburger-menu:hover {
+    background-color: rgba(230, 164, 0, 0.15);
 }
 
 .hamburger-menu span {
     display: block;
-    width: 28px;
+    width: 26px;
     height: 3px;
     background-color: var(--secondary-color);
     border-radius: 3px;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    position: relative;
 }
 
 .hamburger-menu:hover span {
@@ -130,29 +140,34 @@ body {
 }
 
 .hamburger-menu.active span:nth-child(1) {
-    transform: rotate(45deg) translate(8px, 8px);
+    transform: rotate(45deg) translate(5px, 5px);
+    background-color: #ffffff;
 }
 
 .hamburger-menu.active span:nth-child(2) {
     opacity: 0;
+    transform: translateX(-20px);
 }
 
 .hamburger-menu.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(8px, -8px);
+    transform: rotate(-45deg) translate(7px, -7px);
+    background-color: #ffffff;
 }
 
 /* Side Menu */
 .side-menu {
     position: fixed;
-    left: -300px;
+    left: -320px;
     top: 0;
-    width: 280px;
+    width: 300px;
     height: 100vh;
+    height: 100dvh; /* For better mobile support */
     background: linear-gradient(180deg, var(--primary-color) 0%, #003333 100%);
     z-index: 2000;
-    transition: left 0.3s ease;
-    box-shadow: var(--shadow-lg);
+    transition: left 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .side-menu.active {
@@ -1203,7 +1218,32 @@ body.dark-mode .chart-stat {
 
 @media (max-width: 640px) {
     .header-container {
-        padding: 1rem 0.5rem;
+        padding: 1rem 3.5rem 1rem 3.5rem;
+    }
+    
+    .hamburger-menu {
+        left: 0.5rem;
+        width: 40px;
+        height: 40px;
+        padding: 0.5rem;
+    }
+    
+    .hamburger-menu span {
+        width: 24px;
+        height: 2.5px;
+    }
+    
+    .side-menu {
+        width: 280px;
+        left: -300px;
+    }
+    
+    .store-name {
+        font-size: clamp(1.2rem, 4vw, 1.8rem);
+    }
+    
+    .store-address {
+        font-size: clamp(0.75rem, 2vw, 0.95rem);
     }
     
     .section {
