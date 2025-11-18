@@ -1,4 +1,45 @@
 // ===================================
+// HAMBURGER MENU FUNCTIONALITY
+// ===================================
+
+const hamburgerMenu = document.getElementById('hamburgerMenu');
+const sideMenu = document.getElementById('sideMenu');
+const closeMenuBtn = document.getElementById('closeMenu');
+const menuOverlay = document.getElementById('menuOverlay');
+
+function openSideMenu() {
+    sideMenu.classList.add('active');
+    menuOverlay.classList.add('active');
+    hamburgerMenu.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Prevent body scroll when menu is open
+}
+
+function closeSideMenu() {
+    sideMenu.classList.remove('active');
+    menuOverlay.classList.remove('active');
+    hamburgerMenu.classList.remove('active');
+    document.body.style.overflow = ''; // Restore body scroll
+}
+
+hamburgerMenu.addEventListener('click', () => {
+    if (sideMenu.classList.contains('active')) {
+        closeSideMenu();
+    } else {
+        openSideMenu();
+    }
+});
+
+closeMenuBtn.addEventListener('click', closeSideMenu);
+menuOverlay.addEventListener('click', closeSideMenu);
+
+// Close menu on ESC key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && sideMenu.classList.contains('active')) {
+        closeSideMenu();
+    }
+});
+
+// ===================================
 // FIREBASE CONFIGURATION
 // ===================================
 const firebaseConfig = {

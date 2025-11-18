@@ -79,6 +79,7 @@ body {
     text-align: center;
     padding: 1.5rem 1rem;
     background-color: var(--primary-color);
+    position: relative;
 }
 
 .store-name {
@@ -96,6 +97,153 @@ body {
     color: #ffffff;
     margin: 0.5rem 0 0;
     opacity: 0.95;
+}
+
+/* Hamburger Menu Button */
+.hamburger-menu {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    transition: var(--transition);
+}
+
+.hamburger-menu span {
+    display: block;
+    width: 28px;
+    height: 3px;
+    background-color: var(--secondary-color);
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.hamburger-menu:hover span {
+    background-color: #ffffff;
+}
+
+.hamburger-menu.active span:nth-child(1) {
+    transform: rotate(45deg) translate(8px, 8px);
+}
+
+.hamburger-menu.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger-menu.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(8px, -8px);
+}
+
+/* Side Menu */
+.side-menu {
+    position: fixed;
+    left: -300px;
+    top: 0;
+    width: 280px;
+    height: 100vh;
+    background: linear-gradient(180deg, var(--primary-color) 0%, #003333 100%);
+    z-index: 2000;
+    transition: left 0.3s ease;
+    box-shadow: var(--shadow-lg);
+    overflow-y: auto;
+}
+
+.side-menu.active {
+    left: 0;
+}
+
+.side-menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-bottom: 2px solid var(--secondary-color);
+}
+
+.side-menu-header h2 {
+    color: var(--secondary-color);
+    font-size: 1.5rem;
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.close-menu {
+    background: none;
+    border: none;
+    color: var(--secondary-color);
+    font-size: 2.5rem;
+    cursor: pointer;
+    transition: var(--transition);
+    line-height: 1;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-menu:hover {
+    color: #ffffff;
+    transform: rotate(90deg);
+}
+
+.side-menu-list {
+    list-style: none;
+    padding: 1rem 0;
+    margin: 0;
+}
+
+.side-menu-list li {
+    margin: 0;
+}
+
+.side-menu-list a {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 1.1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+    gap: 0.75rem;
+}
+
+.side-menu-list a:hover {
+    background-color: rgba(230, 164, 0, 0.15);
+    border-left-color: var(--secondary-color);
+    padding-left: 2rem;
+    color: var(--secondary-color);
+}
+
+/* Menu Overlay */
+.menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 1500;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.menu-overlay.active {
+    opacity: 1;
+    visibility: visible;
 }
 
 /* ===================================

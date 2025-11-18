@@ -25,10 +25,34 @@
     <!-- Header Section -->
     <header class="main-header">
         <div class="header-container">
+            <button class="hamburger-menu" id="hamburgerMenu" aria-label="Toggle Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
             <h1 class="store-name">MULTI BRAND FOOTWEAR</h1>
             <p class="store-address">Main Market Chandanwari, Near Big Rock 2nd Floor</p>
         </div>
     </header>
+
+    <!-- Side Navigation Menu -->
+    <nav class="side-menu" id="sideMenu">
+        <div class="side-menu-header">
+            <h2>Menu</h2>
+            <button class="close-menu" id="closeMenu" aria-label="Close Menu">&times;</button>
+        </div>
+        <ul class="side-menu-list">
+            <li><a href="#inventory" onclick="scrollToSection('inventory'); closeSideMenu();">📦 Inventory</a></li>
+            <li><a href="#sales" onclick="scrollToSection('sales'); closeSideMenu();">💰 Record Sales</a></li>
+            <li><a href="#sales" onclick="scrollToSection('sales'); closeSideMenu();">🚚 Transport Expenses</a></li>
+            <li><a href="#sales" onclick="scrollToSection('sales'); closeSideMenu();">💸 General Expenses</a></li>
+            <li><a href="#reports" onclick="scrollToSection('reports'); closeSideMenu();">📊 Report & Analysis</a></li>
+            <li><a href="#charts3d" onclick="scrollToSection('charts3d'); closeSideMenu();">📈 3D Visual Analytics</a></li>
+        </ul>
+    </nav>
+
+    <!-- Menu Overlay -->
+    <div class="menu-overlay" id="menuOverlay"></div>
 
     <!-- Inventory Section -->
     <section class="section" id="inventory">
