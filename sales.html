@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Record Sales - Multi Brand Footwear</title>
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+</head>
+<body>
+    <!-- Header Section -->
+    <header class="main-header">
+        <div class="header-container">
+            <h1 class="store-name">MULTI BRAND FOOTWEAR</h1>
+            <p class="store-address">Record Sales & Expenses</p>
+        </div>
+    </header>
+
+    <!-- Sales Section -->
+    <section class="section" id="sales" style="margin-top: var(--header-height);">
+        <div class="container">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Record Sales</h2>
+                    <p class="section-subtitle">Track your sales transactions</p>
+                </div>
+            </div>
+
+            <div class="form-container">
+                <form id="salesForm" class="form">
+                    <div class="form-group">
+                        <label for="saleProduct">Select Product</label>
+                        <select id="saleProduct" required>
+                            <option value="">-- Choose a product --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="saleStock">Stock</label>
+                        <input type="number" id="saleStock" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="saleSize">Size</label>
+                        <select id="saleSize" required>
+                            <option value="">-- Select Size --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="saleColor">Color</label>
+                        <select id="saleColor" required>
+                            <option value="">-- Select Color --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="saleQuantity">Quantity Sold</label>
+                        <input type="number" id="saleQuantity" min="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="salePrice">Sale Price (per unit)</label>
+                        <input type="number" id="salePrice" step="0.01" min="0" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="paymentMode">Payment Mode</label>
+                        <select id="paymentMode" required>
+                            <option value="Cash">Cash</option>
+                            <option value="UPI">UPI</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="saleDate">Date of Sale</label>
+                        <input type="date" id="saleDate" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Record Sale</button>
+                </form>
+
+                <!-- Recent Sales -->
+                <div class="recent-transactions">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="margin: 0;">Recent Sales (Last 10)</h3>
+                        <button type="button" class="btn btn-secondary" id="exportSalesPDF" style="padding: 0.5rem 1rem;">
+                            📄 Export All Sales to PDF
+                        </button>
+                    </div>
+                    <div id="recentSalesList" class="transaction-list">
+                        <!-- Recent sales will appear here -->
+                    </div>
+                </div>
+
+                <!-- Transport Expenses -->
+                <div class="recent-transactions" style="margin-top: 2rem;" id="transportExpenses">
+                    <h3>Transport Expenses</h3>
+                    <form id="transportExpenseForm" class="form-grid">
+                        <div class="form-group">
+                            <label for="transportDate">Date of Transport</label>
+                            <input type="date" id="transportDate" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="transportAmount">Transport Amount (₹)</label>
+                            <input type="number" id="transportAmount" step="0.01" min="0" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="transportBillImage">Bill Image Upload (Optional)</label>
+                            <input type="file" id="transportBillImage" accept="image/*">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Add Transport Expense</button>
+                    </form>
+
+                    <!-- Recent Transport Expenses List -->
+                    <div id="transportExpensesList" class="transaction-list" style="margin-top: 1rem;">
+                        <!-- Recent transport expenses will appear here -->
+                    </div>
+                </div>
+
+                <!-- General Expenses -->
+                <div class="recent-transactions" style="margin-top: 2rem;" id="generalExpenses">
+                    <h3>General Expenses</h3>
+                    <p style="color: #666; font-size: 0.9rem; margin-bottom: 1rem;">Track miscellaneous business expenses (not related to product pricing)</p>
+                    <form id="generalExpenseForm" class="form-grid">
+                        <div class="form-group">
+                            <label for="generalExpenseDate">Date</label>
+                            <input type="date" id="generalExpenseDate" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="generalExpenseAmount">Amount (₹)</label>
+                            <input type="number" id="generalExpenseAmount" step="0.01" min="0" required>
+                        </div>
+
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label for="generalExpenseNote">Note</label>
+                            <textarea id="generalExpenseNote" rows="3" placeholder="Enter expense details..." required></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Add General Expense</button>
+                    </form>
+
+                    <!-- Recent General Expenses List -->
+                    <div id="generalExpensesList" class="transaction-list" style="margin-top: 1rem;">
+                        <!-- Recent general expenses will appear here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Fixed Bottom Navigation Bar (Mobile Only) -->
+    <nav class="bottom-nav">
+        <a href="index.html" class="bottom-nav-item">
+            <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="14" width="7" height="7" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" rx="1"/>
+            </svg>
+            <span class="bottom-nav-label">Products</span>
+        </a>
+        <a href="products-gallery.html" class="bottom-nav-item">
+            <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+            </svg>
+            <span class="bottom-nav-label">Gallery</span>
+        </a>
+        <a href="sales.html" class="bottom-nav-item">
+            <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="1" x2="12" y2="23"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+            <span class="bottom-nav-label">Sales</span>
+        </a>
+        <a href="reports.html" class="bottom-nav-item">
+            <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="20" x2="18" y2="10"/>
+                <line x1="12" y1="20" x2="12" y2="4"/>
+                <line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+            <span class="bottom-nav-label">Reports</span>
+        </a>
+    </nav>
+
+    <!-- jsPDF Library for PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
