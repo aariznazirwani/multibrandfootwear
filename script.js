@@ -759,11 +759,9 @@ function scrollToSection(sectionId) {
 
 // Search functionality
 document.getElementById('searchInput').addEventListener('input', filterProducts);
-document.getElementById('categoryFilter').addEventListener('change', filterProducts);
 
 function filterProducts() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    const categoryFilter = document.getElementById('categoryFilter').value;
     
     const filtered = inventory.products.filter(product => {
         // Check if search term is 2 digits (last 2 digits of product code)
@@ -785,9 +783,7 @@ function filterProducts() {
                 getCategoryName(product.category).toLowerCase().includes(searchTerm);
         }
         
-        const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter;
-        
-        return matchesSearch && matchesCategory;
+        return matchesSearch;
     });
     
     renderProducts(filtered);

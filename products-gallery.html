@@ -336,6 +336,16 @@
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+        
+        // Enable offline persistence for instant data loading
+        db.enablePersistence({ synchronizeTabs: true })
+            .catch((err) => {
+                if (err.code == 'failed-precondition') {
+                    console.warn('Multiple tabs open, persistence enabled in first tab only');
+                } else if (err.code == 'unimplemented') {
+                    console.warn('Browser does not support offline persistence');
+                }
+            });
 
         // ===================================
         // GALLERY STATE
@@ -349,7 +359,11 @@
         // ===================================
         async function loadProducts() {
             try {
-                const productsSnapshot = await db.collection('products').get();
+                // Try to load from cache first for instant display
+                const productsSnapshot = await db.collection('products')
+                    .get({ source: 'cache' })
+                    .catch(() => db.collection('products').get());
+                    
                 allProducts = productsSnapshot.docs.map(doc => ({ 
                     id: doc.id, 
                     ...doc.data() 
@@ -663,6 +677,10 @@
         // INITIALIZE
         // ===================================
         document.addEventListener('DOMContentLoaded', async () => {
+            // Hide loading overlay immediately
+            hideLoading();
+            
+            // Load products (will use cache first if available)
             await loadProducts();
             setupRealtimeListener();
         });
