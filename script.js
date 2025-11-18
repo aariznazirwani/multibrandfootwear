@@ -57,6 +57,16 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const storage = firebase.storage();
 
+// Enable offline persistence for instant data loading
+db.enablePersistence({ synchronizeTabs: true })
+    .catch((err) => {
+        if (err.code == 'failed-precondition') {
+            console.warn('Multiple tabs open, persistence enabled in first tab only');
+        } else if (err.code == 'unimplemented') {
+            console.warn('Browser does not support offline persistence');
+        }
+    });
+
 // ===================================
 // DATA STORAGE & STATE MANAGEMENT
 // ===================================
@@ -74,24 +84,25 @@ class InventoryManager {
 
 
 
-    // Firebase methods
+    // Firebase methods with real-time listeners for instant updates
     async initializeData() {
         try {
-            // Load products from Firebase
-            const productsSnapshot = await db.collection('products').get();
+            // Use Promise.all to load all data in parallel for faster loading
+            const [productsSnapshot, salesSnapshot, transportSnapshot, generalExpensesSnapshot] = await Promise.all([
+                db.collection('products').get({ source: 'cache' }).catch(() => db.collection('products').get()),
+                db.collection('sales').orderBy('date', 'desc').get({ source: 'cache' }).catch(() => db.collection('sales').orderBy('date', 'desc').get()),
+                db.collection('transportExpenses').orderBy('date', 'desc').get({ source: 'cache' }).catch(() => db.collection('transportExpenses').orderBy('date', 'desc').get()),
+                db.collection('generalExpenses').orderBy('date', 'desc').get({ source: 'cache' }).catch(() => db.collection('generalExpenses').orderBy('date', 'desc').get())
+            ]);
+
+            // Load data from snapshots
             this.products = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-            // Load sales from Firebase
-            const salesSnapshot = await db.collection('sales').orderBy('date', 'desc').get();
             this.sales = salesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-            // Load transport expenses from Firebase
-            const transportSnapshot = await db.collection('transportExpenses').orderBy('date', 'desc').get();
             this.transportExpenses = transportSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-            // Load general expenses from Firebase
-            const generalExpensesSnapshot = await db.collection('generalExpenses').orderBy('date', 'desc').get();
             this.generalExpenses = generalExpensesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            // Set up real-time listeners for automatic updates (runs in background)
+            this.setupRealtimeListeners();
 
             this.initialized = true;
             return true;
@@ -100,6 +111,124 @@ class InventoryManager {
             showNotification('Error loading data. Please refresh the page.', 'error');
             return false;
         }
+    }
+
+    setupRealtimeListeners() {
+        // Listen for products changes
+        db.collection('products').onSnapshot((snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                const product = { id: change.doc.id, ...change.doc.data() };
+                
+                if (change.type === 'added') {
+                    const exists = this.products.find(p => p.id === product.id);
+                    if (!exists) {
+                        this.products.push(product);
+                        renderProducts();
+                        populateProductDropdowns();
+                    }
+                } else if (change.type === 'modified') {
+                    const index = this.products.findIndex(p => p.id === product.id);
+                    if (index !== -1) {
+                        this.products[index] = product;
+                        renderProducts();
+                        populateProductDropdowns();
+                    }
+                } else if (change.type === 'removed') {
+                    this.products = this.products.filter(p => p.id !== product.id);
+                    renderProducts();
+                    populateProductDropdowns();
+                }
+            });
+            updateReports();
+            if (charts3D.categoryDistribution) {
+                update3DChartsData();
+            }
+        }, (error) => {
+            console.error('Error in products listener:', error);
+        });
+
+        // Listen for sales changes
+        db.collection('sales').orderBy('date', 'desc').onSnapshot((snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                const sale = { id: change.doc.id, ...change.doc.data() };
+                
+                if (change.type === 'added') {
+                    const exists = this.sales.find(s => s.id === sale.id);
+                    if (!exists) {
+                        this.sales.unshift(sale);
+                        renderRecentSales();
+                    }
+                } else if (change.type === 'modified') {
+                    const index = this.sales.findIndex(s => s.id === sale.id);
+                    if (index !== -1) {
+                        this.sales[index] = sale;
+                        renderRecentSales();
+                    }
+                } else if (change.type === 'removed') {
+                    this.sales = this.sales.filter(s => s.id !== sale.id);
+                    renderRecentSales();
+                }
+            });
+            updateReports();
+            if (charts3D.categoryDistribution) {
+                update3DChartsData();
+            }
+        }, (error) => {
+            console.error('Error in sales listener:', error);
+        });
+
+        // Listen for transport expenses changes
+        db.collection('transportExpenses').orderBy('date', 'desc').onSnapshot((snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                const expense = { id: change.doc.id, ...change.doc.data() };
+                
+                if (change.type === 'added') {
+                    const exists = this.transportExpenses.find(e => e.id === expense.id);
+                    if (!exists) {
+                        this.transportExpenses.unshift(expense);
+                        renderTransportExpenses();
+                    }
+                } else if (change.type === 'modified') {
+                    const index = this.transportExpenses.findIndex(e => e.id === expense.id);
+                    if (index !== -1) {
+                        this.transportExpenses[index] = expense;
+                        renderTransportExpenses();
+                    }
+                } else if (change.type === 'removed') {
+                    this.transportExpenses = this.transportExpenses.filter(e => e.id !== expense.id);
+                    renderTransportExpenses();
+                }
+            });
+        }, (error) => {
+            console.error('Error in transport expenses listener:', error);
+        });
+
+        // Listen for general expenses changes
+        db.collection('generalExpenses').orderBy('date', 'desc').onSnapshot((snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                const expense = { id: change.doc.id, ...change.doc.data() };
+                
+                if (change.type === 'added') {
+                    const exists = this.generalExpenses.find(e => e.id === expense.id);
+                    if (!exists) {
+                        this.generalExpenses.unshift(expense);
+                        renderGeneralExpenses();
+                    }
+                } else if (change.type === 'modified') {
+                    const index = this.generalExpenses.findIndex(e => e.id === expense.id);
+                    if (index !== -1) {
+                        this.generalExpenses[index] = expense;
+                        renderGeneralExpenses();
+                    }
+                } else if (change.type === 'removed') {
+                    this.generalExpenses = this.generalExpenses.filter(e => e.id !== expense.id);
+                    renderGeneralExpenses();
+                }
+            });
+            updateReports();
+        }, (error) => {
+            console.error('Error in general expenses listener:', error);
+        });
     }
 
     // Product CRUD operations
@@ -584,8 +713,14 @@ function updateReports() {
 document.addEventListener('DOMContentLoaded', async function() {
     const loadingOverlay = document.getElementById('loadingOverlay');
     
+    // Hide loading overlay immediately and show cached data
+    loadingOverlay.classList.add('hidden');
+    setTimeout(() => {
+        loadingOverlay.style.display = 'none';
+    }, 200);
+    
     try {
-        // Initialize Firebase data
+        // Initialize Firebase data (will use cache first, then sync in background)
         const success = await inventory.initializeData();
         
         if (success) {
@@ -601,19 +736,12 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (charts3D.categoryDistribution) {
                 update3DChartsData();
             }
-            
-            // Hide loading overlay
-            setTimeout(() => {
-                loadingOverlay.classList.add('hidden');
-                setTimeout(() => {
-                    loadingOverlay.style.display = 'none';
-                }, 300);
-            }, 500);
         }
     } catch (error) {
         console.error('Error initializing app:', error);
-        loadingOverlay.innerHTML = `
-            <div style="text-align: center; color: #e6a400;">
+        // Show error only if we couldn't load any data
+        document.body.innerHTML += `
+            <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #e6a400; background: #004D4D; padding: 2rem; border-radius: 1rem; z-index: 10000;">
                 <h2>⚠️ Error Loading Data</h2>
                 <p>Unable to connect to Firebase. Please check your connection and refresh.</p>
                 <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.75rem 2rem; background: #e6a400; color: #004D4D; border: none; border-radius: 0.5rem; cursor: pointer; font-weight: 600;">
