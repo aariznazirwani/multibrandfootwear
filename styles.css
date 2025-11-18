@@ -397,70 +397,66 @@ body {
 @media (max-width: 767px) {
     .product-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 0.6rem;
+        gap: 0.75rem;
         padding: 0.5rem;
     }
     
     .product-card {
-        border-radius: 10px;
+        border-radius: 12px;
         overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
     
     .product-image {
-        height: 120px;
-        font-size: 2.5rem;
+        height: 140px;
     }
     
     .product-info {
-        padding: 0.6rem 0.5rem;
+        padding: 0.75rem 0.6rem;
     }
     
     .product-name {
-        font-size: 0.85rem;
+        font-size: 0.9rem;
         font-weight: 600;
-        margin-bottom: 0.3rem;
+        margin-bottom: 0.35rem;
         line-height: 1.2;
         overflow: hidden;
         text-overflow: ellipsis;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        white-space: normal;
+        white-space: nowrap;
     }
     
     .product-details {
-        gap: 0.25rem;
-        margin-bottom: 0.4rem;
+        gap: 0.3rem;
+        margin-bottom: 0.5rem;
         flex-wrap: wrap;
     }
     
     .product-badge {
-        padding: 0.15rem 0.45rem;
-        font-size: 0.65rem;
-        border-radius: 5px;
+        padding: 0.15rem 0.5rem;
+        font-size: 0.7rem;
+        border-radius: 6px;
     }
     
     .product-price {
-        font-size: 1.05rem;
-        margin-bottom: 0.3rem;
+        font-size: 1.1rem;
+        margin-bottom: 0.35rem;
         font-weight: 700;
     }
     
     .product-stock {
-        font-size: 0.7rem;
-        margin-bottom: 0.4rem;
+        font-size: 0.75rem;
+        margin-bottom: 0.5rem;
     }
     
     .product-actions {
-        gap: 0.3rem;
-        margin-top: 0.4rem;
+        gap: 0.35rem;
+        margin-top: 0.5rem;
     }
     
     .btn-icon {
-        padding: 0.35rem;
-        font-size: 0.7rem;
-        border-radius: 5px;
+        padding: 0.4rem;
+        font-size: 0.75rem;
+        border-radius: 6px;
     }
 }
 
@@ -481,14 +477,14 @@ body {
 
 .product-image {
     width: 100%;
-    height: 160px;
+    height: 200px;
     object-fit: cover;
     background: var(--primary-color);
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--secondary-color);
-    font-size: 3.5rem;
+    font-size: 4rem;
 }
 
 .product-image img {
@@ -498,42 +494,41 @@ body {
 }
 
 .product-info {
-    padding: 0.875rem;
+    padding: 1.25rem;
 }
 
 .product-name {
-    font-size: 1.05rem;
+    font-size: 1.25rem;
     font-weight: 600;
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.5rem;
     color: var(--text-primary);
-    line-height: 1.3;
 }
 
 .product-details {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.4rem;
-    margin-bottom: 0.6rem;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
 }
 
 .product-badge {
-    padding: 0.2rem 0.6rem;
-    border-radius: 0.875rem;
-    font-size: 0.8rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
     font-weight: 500;
     background-color: var(--bg-secondary);
     color: var(--text-secondary);
 }
 
 .product-price {
-    font-size: 1.3rem;
+    font-size: 1.5rem;
     font-weight: 700;
     color: var(--primary-color);
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.5rem;
 }
 
 .product-stock {
-    font-size: 0.8rem;
+    font-size: 0.875rem;
     color: var(--text-secondary);
 }
 
@@ -693,13 +688,6 @@ body {
     /* Add bottom padding to body for fixed nav */
     body {
         padding-bottom: 70px;
-    }
-    
-    /* Hide Sales and Reports sections on mobile - show only on their dedicated pages */
-    #sales,
-    #reports,
-    #charts3d {
-        display: none !important;
     }
 }
 
